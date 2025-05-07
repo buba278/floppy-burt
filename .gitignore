@@ -1,0 +1,41 @@
+# Quartus generated files and directories
+db/
+incremental_db/
+output_files/
+simulation/
+*.rpt
+*.qws
+*.sld
+*.sof
+*.pof
+*.jic
+*.hex
+*.bin
+*.elf
+*.map
+*.obj
+*.log
+*.chg
+*.cmp
+*.bak
+*.qdf
+*.qdb
+*.qws.lock
+
+# Temporary files
+*.temp
+*.tmp
+*.~*
+
+# Backup files
+*~
+*.bak
+*.old
+
+# Quartus user-specific settings
+*.qws
+*.tcl
+
+# Other IDE or OS-specific files
+.DS_Store
+Thumbs.db
