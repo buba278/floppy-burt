@@ -15,7 +15,7 @@ entity floppy_burt_top is
 end floppy_burt_top; 
 
 configuration config of floppy_burt_top is
-    for vga_test_bouncy -- change to desired architecture
+    for mouse_dev -- change to desired architecture
     end for;
 end config;
 
@@ -203,16 +203,17 @@ architecture mouse_dev of floppy_burt_top is
 
     component pll25MHz is
         port (
-            refclk   : in  std_logic := '0'; --  refclk.clk
-            rst      : in  std_logic := '0'; --   reset.reset
+            refclk   : in  std_logic := '0'; -- refclk.clk
+            rst      : in  std_logic := '0'; -- reset.reset
             outclk_0 : out std_logic;        -- outclk0.clk
-            locked   : out std_logic         --  locked.export
+            locked   : out std_logic         -- locked.export
         );
     end component pll25MHz;
 
     component mouse is
         port (
-        	clock_25Mhz, reset 		    : IN std_logic;
+        	clock_25Mhz 		        : IN std_logic;
+            reset 		                : IN std_logic := '0';
             mouse_data					: INOUT std_logic;
             mouse_clk 					: INOUT std_logic;
             left_button, right_button	: OUT std_logic;
@@ -222,9 +223,9 @@ architecture mouse_dev of floppy_burt_top is
     end component mouse;
 
     -- INTERMEDIATE SIGNALS
-    signal clock_25Mhz : std_logic;
-    signal s_clock_25Mhz                : std_logic; 
-    signal s_rst 		        	    : std_logic;
+    signal clock_25Mhz                  : std_logic;
+    signal s_locked                     : std_logic;
+    signal s_rst 		        	    : std_logic := '0'; 
     signal s_left_button                : std_logic;
     signal s_right_button	            : std_logic;
     signal s_mouse_cursor_row 			: std_logic_vector(9 DOWNTO 0); 
@@ -242,13 +243,13 @@ begin
 
     m1: mouse
     port map (
-        clock_25Mhz => clock_25Mhz;
-        reset => s_rst;
-        mouse_data => PS2_DAT;
-        mouse_clk => PS2_CLK;
-        left_button => LEDR(1);
-        right_button => LEDR(0);
-        mouse_cursor_row => s_mouse_cursor_row;
+        clock_25Mhz => clock_25Mhz,
+        reset => s_rst,
+        mouse_data => PS2_DAT,
+        mouse_clk => PS2_CLK,
+        left_button => LEDR(1),
+        right_button => LEDR(0),
+        mouse_cursor_row => s_mouse_cursor_row,
         mouse_cursor_column => s_mouse_cursor_column
     );
 
