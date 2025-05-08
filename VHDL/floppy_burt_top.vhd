@@ -7,7 +7,10 @@ entity floppy_burt_top is
         CLOCK_50 : in std_logic;
         KEY : in std_logic_vector(3 downto 0);
         VGA_R, VGA_G, VGA_B : out std_logic_vector(3 downto 0);
-        VGA_HS, VGA_VS : out std_logic
+        VGA_HS, VGA_VS : out std_logic;
+        LEDR : out std_logic_vector(9 downto 0);
+        PS2_CLK : INOUT std_logic;
+        PS2_DAT : INOUT std_logic
     );
 end floppy_burt_top; 
 
@@ -193,5 +196,60 @@ begin
     -- rendering logic wants syncing (bouncy ball)
     VGA_VS <= s_VGA_VS;
     VGA_HS <= s_VGA_HS;
+
+end architecture;
+
+architecture mouse_dev of floppy_burt_top is
+
+    component pll25MHz is
+        port (
+            refclk   : in  std_logic := '0'; --  refclk.clk
+            rst      : in  std_logic := '0'; --   reset.reset
+            outclk_0 : out std_logic;        -- outclk0.clk
+            locked   : out std_logic         --  locked.export
+        );
+    end component pll25MHz;
+
+    component mouse is
+        port (
+        	clock_25Mhz, reset 		    : IN std_logic;
+            mouse_data					: INOUT std_logic;
+            mouse_clk 					: INOUT std_logic;
+            left_button, right_button	: OUT std_logic;
+		    mouse_cursor_row 			: OUT std_logic_vector(9 DOWNTO 0); 
+		    mouse_cursor_column 		: OUT std_logic_vector(9 DOWNTO 0) 
+        );
+    end component mouse;
+
+    -- INTERMEDIATE SIGNALS
+    signal clock_25Mhz : std_logic;
+    signal s_clock_25Mhz                : std_logic; 
+    signal s_rst 		        	    : std_logic;
+    signal s_left_button                : std_logic;
+    signal s_right_button	            : std_logic;
+    signal s_mouse_cursor_row 			: std_logic_vector(9 DOWNTO 0); 
+    signal s_mouse_cursor_column 		: std_logic_vector(9 DOWNTO 0); 
+
+begin
+    
+    c1: pll25MHz
+    port map (
+        refclk => CLOCK_50,
+        rst => s_rst,
+        outclk_0 => clock_25Mhz,
+        locked => s_locked
+    );
+
+    m1: mouse
+    port map (
+        clock_25Mhz => clock_25Mhz;
+        reset => s_rst;
+        mouse_data => PS2_DAT;
+        mouse_clk => PS2_CLK;
+        left_button => LEDR(1);
+        right_button => LEDR(0);
+        mouse_cursor_row => s_mouse_cursor_row;
+        mouse_cursor_column => s_mouse_cursor_column
+    );
 
 end architecture;
