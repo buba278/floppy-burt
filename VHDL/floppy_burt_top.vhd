@@ -5,12 +5,18 @@ use ieee.numeric_std.all;
 entity floppy_burt_top is
     port (
         CLOCK_50 : in std_logic;
+        KEY : in std_logic_vector(3 downto 0);
         VGA_R, VGA_G, VGA_B : out std_logic_vector(3 downto 0);
         VGA_HS, VGA_VS : out std_logic
     );
 end floppy_burt_top; 
 
-architecture vga_test of floppy_burt_top is
+configuration config of floppy_burt_top is
+    for vga_test_bouncy -- change to desired architecture
+    end for;
+end config;
+
+architecture vga_test_ball of floppy_burt_top is
 
     component VGA_SYNC is
         port (
@@ -55,43 +61,137 @@ architecture vga_test of floppy_burt_top is
 
 begin
 
-c1: pll25MHz
-    port map (
-        refclk => CLOCK_50,
-        rst => s_rst,
-        outclk_0 => clock_25Mhz,
-        locked => s_locked
-    );
+    c1: pll25MHz
+        port map (
+            refclk => CLOCK_50,
+            rst => s_rst,
+            outclk_0 => clock_25Mhz,
+            locked => s_locked
+        );
 
-b1: ball
-    port map (
-        -- input
-        clk => clock_25Mhz,
-        pixel_row => s_pix_row,
-        pixel_column => s_pix_col,
-        -- output
-        red => s_red,
-        green => s_green,
-        blue => s_blue
-    );
+    b1: ball
+        port map (
+            -- input
+            clk => clock_25Mhz,
+            pixel_row => s_pix_row,
+            pixel_column => s_pix_col,
+            -- output
+            red => s_red,
+            green => s_green,
+            blue => s_blue
+        );
 
-v1: VGA_SYNC
-    port map (
-        -- input
-        clock_25Mhz => clock_25Mhz,
-        red => s_red,
-        green => s_green,
-        blue => s_blue,
-        -- output
-        -- NOTE: might have to do a different approach for the color mapping - but just test it first
-        -- if not working then just make it the entire stdlogicvector, but check ball to see if changes needed
-        red_out => VGA_R, 
-        green_out => VGA_G,
-        blue_out => VGA_B,
-        horiz_sync_out => VGA_HS,
-        vert_sync_out => VGA_VS,
-        pixel_row => s_pix_row, 
-        pixel_column => s_pix_col
-    );
+    v1: VGA_SYNC
+        port map (
+            -- input
+            clock_25Mhz => clock_25Mhz,
+            red => s_red,
+            green => s_green,
+            blue => s_blue,
+            -- output
+            -- NOTE: might have to do a different approach for the color mapping - but just test it first
+            -- if not working then just make it the entire stdlogicvector, but check ball to see if changes needed
+            red_out => VGA_R, 
+            green_out => VGA_G,
+            blue_out => VGA_B,
+            horiz_sync_out => VGA_HS,
+            vert_sync_out => VGA_VS,
+            pixel_row => s_pix_row, 
+            pixel_column => s_pix_col
+        );
+
+end architecture;
+
+architecture vga_test_bouncy of floppy_burt_top is
+
+    component VGA_SYNC is
+        port (
+            clock_25Mhz : in STD_LOGIC; 
+            red, green, blue : in STD_LOGIC_VECTOR(3 downto 0);
+            red_out, green_out, blue_out : out STD_LOGIC_VECTOR(3 downto 0);
+            horiz_sync_out, vert_sync_out : out STD_LOGIC;
+            pixel_row, pixel_column: out STD_LOGIC_VECTOR(9 downto 0)
+        );
+    end component VGA_SYNC;
+
+    component bouncy_ball is
+	port ( 
+		pb1, pb2, clk, vert_sync	: IN std_logic;
+        pixel_row, pixel_column		: IN std_logic_vector(9 DOWNTO 0);
+        red, green, blue 			: OUT std_logic_vector(3 downto 0)
+	);		
+    end component bouncy_ball;
+
+    component pll25MHz is
+        port (
+            refclk   : in  std_logic := '0'; --  refclk.clk
+            rst      : in  std_logic := '0'; --   reset.reset
+            outclk_0 : out std_logic;        -- outclk0.clk
+            locked   : out std_logic         --  locked.export
+        );
+    end component pll25MHz;
+
+    -- INTERMEDIATE SIGNALS
+    signal clock_25Mhz : std_logic;
+    signal s_rst : std_logic; -- can link to board reset if want
+    signal s_locked : std_logic; -- ? clock stability
+
+    signal s_VGA_VS : std_logic;
+    signal s_VGA_HS : std_logic;
+    signal s_pix_row : std_logic_vector(9 downto 0);
+    signal s_pix_col : std_logic_vector(9 downto 0);
+    signal s_red : std_logic_vector(3 downto 0);
+    signal s_green : std_logic_vector(3 downto 0);
+    signal s_blue : std_logic_vector(3 downto 0);
+
+    -- need to know fpga pin ports:
+    -- for sync and colors
+
+begin
+
+    c1: pll25MHz
+        port map (
+            refclk => CLOCK_50,
+            rst => s_rst,
+            outclk_0 => clock_25Mhz,
+            locked => s_locked
+        );
+
+    b1: bouncy_ball
+        port map (
+            -- input
+            pb1 => KEY(0), -- pushbutton
+            pb2 => KEY(1),
+            clk => clock_25Mhz,
+            vert_sync => s_VGA_VS,
+
+            pixel_row => s_pix_row,
+            pixel_column => s_pix_col,
+            -- output
+            red => s_red,
+            green => s_green,
+            blue => s_blue
+        );
+
+    v1: VGA_SYNC
+        port map (
+            -- input
+            clock_25Mhz => clock_25Mhz,
+            red => s_red,
+            green => s_green,
+            blue => s_blue,
+            -- output
+            red_out => VGA_R, 
+            green_out => VGA_G,
+            blue_out => VGA_B,
+            horiz_sync_out => s_VGA_HS,
+            vert_sync_out => s_VGA_VS,
+            pixel_row => s_pix_row, 
+            pixel_column => s_pix_col
+        );
+
+    -- rendering logic wants syncing (bouncy ball)
+    VGA_VS <= s_VGA_VS;
+    VGA_HS <= s_VGA_HS;
 
 end architecture;
