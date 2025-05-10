@@ -6,6 +6,8 @@ entity floppy_burt_top is
     port (
         CLOCK_50 : in std_logic;
         KEY : in std_logic_vector(3 downto 0);
+        SW : in std_logic_vector(9 downto 0);
+        HEX0, HEX1, HEX2, HEX3 : out std_logic_vector(6 downto 0);
         VGA_R, VGA_G, VGA_B : out std_logic_vector(3 downto 0);
         VGA_HS, VGA_VS : out std_logic;
         LEDR : out std_logic_vector(9 downto 0);
@@ -15,7 +17,7 @@ entity floppy_burt_top is
 end floppy_burt_top; 
 
 configuration config of floppy_burt_top is
-    for mouse_dev -- change to desired architecture
+    for seven_seg_test -- change to desired architecture
     end for;
 end config;
 
@@ -254,3 +256,79 @@ begin
     );
 
 end architecture;
+
+architecture seven_seg_test of floppy_burt_top is
+
+    component pll25MHz is
+        port (
+            refclk   : in  std_logic := '0'; -- refclk.clk
+            rst      : in  std_logic := '0'; -- reset.reset
+            outclk_0 : out std_logic;        -- outclk0.clk
+            locked   : out std_logic         -- locked.export
+        );
+    end component pll25MHz;
+
+    component mouse is
+        port (
+        	clock_25Mhz 		        : IN std_logic;
+            reset 		                : IN std_logic := '0';
+            mouse_data					: INOUT std_logic;
+            mouse_clk 					: INOUT std_logic;
+            left_button, right_button	: OUT std_logic;
+		    mouse_cursor_row 			: OUT std_logic_vector(9 DOWNTO 0); 
+		    mouse_cursor_column 		: OUT std_logic_vector(9 DOWNTO 0) 
+        );
+    end component mouse;
+
+    component display_7seg is
+        port (
+            clk_25MHz, reset    : in std_logic;
+            mouse_cursor_row    : in std_logic_vector(9 downto 0);
+            mouse_cursor_column : in std_logic_vector(9 downto 0);
+            mouse_dir_toggle    : in std_logic;
+            seven_seg_out       : out std_logic_vector(6 downto 0)
+        );
+    end component display_7seg;
+
+    -- INTERMEDIATE SIGNALS
+    signal clock_25Mhz                  : std_logic;
+    signal s_locked                     : std_logic;
+    signal s_rst 		        	    : std_logic := '0'; 
+    signal s_left_button                : std_logic;
+    signal s_right_button	            : std_logic;
+    signal s_mouse_cursor_row 			: std_logic_vector(9 DOWNTO 0); 
+    signal s_mouse_cursor_column 		: std_logic_vector(9 DOWNTO 0);
+
+begin
+    
+    c1: pll25MHz
+    port map (
+        refclk => CLOCK_50,
+        rst => s_rst,
+        outclk_0 => clock_25Mhz,
+        locked => s_locked
+    );
+
+    m1: mouse
+    port map (
+        clock_25Mhz => clock_25Mhz,
+        reset => s_rst,
+        mouse_data => PS2_DAT,
+        mouse_clk => PS2_CLK,
+        left_button => LEDR(1),
+        right_button => LEDR(0),
+        mouse_cursor_row => s_mouse_cursor_row,
+        mouse_cursor_column => s_mouse_cursor_column
+    );
+
+    d1: display_7seg
+    port map (
+        clk_25MHz => clock_25Mhz,
+        reset => s_rst,
+        mouse_cursor_row => s_mouse_cursor_row,
+        mouse_cursor_column => s_mouse_cursor_column,
+        mouse_dir_toggle => SW(0),
+        seven_seg_out => HEX0
+    );
+
+end seven_seg_test;
