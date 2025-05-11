@@ -216,12 +216,14 @@ architecture vga_test_renderer of floppy_burt_top is
     end component ball_renderer;
     component text_renderer IS
 	PORT ( 
-        clk                         : IN std_logic;
-        char_address                : IN std_logic_vector(5 downto 0);
-		current_row, current_col	: IN std_logic_vector(9 DOWNTO 0);
-        text_origin_col, text_origin_row : IN std_logic_vector(9 DOWNTO 0);
-        text_visible : OUT std_logic;
-		red, green, blue : OUT std_logic_vector(3 downto 0)
+        clk                                 : IN std_logic;
+        char_count                          : IN integer;
+        char_address                        : IN std_logic_vector(47 downto 0);
+		current_row, current_col	        : IN std_logic_vector(9 DOWNTO 0);
+        text_origin_col, text_origin_row    : IN std_logic_vector(9 DOWNTO 0);
+        text_scale                          : IN integer;
+        text_visible                        : OUT std_logic;
+		red, green, blue                    : OUT std_logic_vector(3 downto 0)
 	);		
     END component text_renderer;
     component pll25MHz is
@@ -242,10 +244,12 @@ architecture vga_test_renderer of floppy_burt_top is
     signal s_ball_r, s_ball_g, s_ball_b : std_logic_vector(3 downto 0);
 
     -- text
-    signal s_char : std_logic_vector(5 downto 0);
+    signal s_char : std_logic_vector(47 downto 0);
+    signal s_char_count : integer;
     signal s_text_r, s_text_g, s_text_b : std_logic_vector(3 downto 0);
     signal s_text_visible : std_logic;
     signal s_text_origin_col, s_text_origin_row : std_logic_vector(9 downto 0);
+    signal s_text_scale : integer;
 
     -- full renderer
     signal s_final_r, s_final_g, s_final_b : std_logic_vector(3 downto 0);
@@ -253,8 +257,14 @@ architecture vga_test_renderer of floppy_burt_top is
 
     signal s_VGA_VS, s_VGA_HS : std_logic;
     
+    constant char_hello : std_logic_vector(47 downto 0) :=
+        ("101000" & "100101" & "101100" & "101100" & "101111") & ("000000" & "000000" & "000000");
+    constant char_scorehash : std_logic_vector(47 downto 0) :=
+        ("010011" & "000011" & "001111" & "010010" & "000101" & "100000" & "100011") & ("000000");
+
 begin
 
+    -- pulled down
     s_rst <= not RESET_N;
 
     c1: pll25MHz
@@ -298,11 +308,13 @@ begin
         port map (
             -- input
             clk => clock_25Mhz,
+            char_count => s_char_count,
             char_address => s_char,
             current_row => s_pix_row,
             current_col => s_pix_col,
             text_origin_col => s_text_origin_col,
             text_origin_row => s_text_origin_row,
+            text_scale => s_text_scale,
             -- output
             text_visible => s_text_visible,
             red => s_text_r,
@@ -344,8 +356,13 @@ begin
     VGA_VS <= s_VGA_VS;
     VGA_HS <= s_VGA_HS;
 
-    s_char <= "000001"; -- 'A'
+
+    s_char_count <= 7 when KEY(0) = '1' else 5;
+    s_char <= char_scorehash when KEY(0) = '1' else -- 'SCORE #'
+              char_hello; -- 'hello'
+
     s_text_origin_col <= "0000010100"; -- Column 20
     s_text_origin_row <= "0000010100"; -- Row 20
+    s_text_scale <= 2;
 
 end architecture;
