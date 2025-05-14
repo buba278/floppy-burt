@@ -264,15 +264,10 @@ set_global_assignment -name PARTITION_COLOR 16764057 -entity DE0_CV_Default -sec
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -entity DE0_CV_Default -section_id Top
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
-<<<<<<< HEAD
-set_global_assignment -name VHDL_FILE ../VHDL/display/7Seg/display_7seg.vhd
-set_global_assignment -name VHDL_FILE ../VHDL/display/7Seg/BCD_to_7Seg.vhd
 set_global_assignment -name VHDL_FILE ../VHDL/interface/ps2/mouse.vhd
-=======
 set_global_assignment -name VHDL_FILE ../VHDL/display/VGA_controller/text_renderer.vhd
 set_global_assignment -name VHDL_FILE ../VHDL/display/VGA_controller/ball_renderer.vhd
 set_global_assignment -name VHDL_FILE ../VHDL/display/VGA_controller/char_rom.vhd
->>>>>>> vga_dev
 set_global_assignment -name VHDL_FILE ../VHDL/display/VGA_controller/bouncy_ball.vhd
 set_global_assignment -name VHDL_FILE ../VHDL/display/VGA_controller/vga_sync.vhd
 set_global_assignment -name VHDL_FILE ../VHDL/display/VGA_controller/ball.vhd
@@ -280,4 +275,7 @@ set_global_assignment -name VHDL_FILE ../VHDL/floppy_burt_top.vhd
 set_global_assignment -name QIP_FILE pll25MHz.qip
 set_global_assignment -name SIP_FILE pll25MHz.sip
 set_global_assignment -name SOURCE_FILE db/floppy_burt_top.cmp.rdb
+set_global_assignment -name VHDL_FILE ../VHDL/display/7Seg/bcd_to_7seg_char.vhd
+set_global_assignment -name VHDL_FILE ../VHDL/display/7Seg/bcd_to_7seg_digit.vhd
+set_global_assignment -name VHDL_FILE ../VHDL/display/7Seg/display_7seg.vhd
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

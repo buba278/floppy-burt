@@ -8,7 +8,7 @@ entity floppy_burt_top is
         CLOCK_50 : in std_logic;
         KEY : in std_logic_vector(3 downto 0);
         SW : in std_logic_vector(9 downto 0);
-        HEX0, HEX1, HEX2, HEX3 : out std_logic_vector(6 downto 0);
+        HEX0, HEX1, HEX2, HEX3, HEX4, HEX5 : out std_logic_vector(6 downto 0);
         VGA_R, VGA_G, VGA_B : out std_logic_vector(3 downto 0);
         VGA_HS, VGA_VS : out std_logic;
         LEDR : out std_logic_vector(9 downto 0);
@@ -18,7 +18,6 @@ entity floppy_burt_top is
 end floppy_burt_top; 
 
 configuration config of floppy_burt_top is
-    for vga_test_renderer -- change to desired architecture
     for seven_seg_test -- change to desired architecture
     end for;
 end config;
@@ -454,11 +453,14 @@ architecture seven_seg_test of floppy_burt_top is
 
     component display_7seg is
         port (
-            clk_25MHz, reset    : in std_logic;
-            mouse_cursor_row    : in std_logic_vector(9 downto 0);
-            mouse_cursor_column : in std_logic_vector(9 downto 0);
-            mouse_dir_toggle    : in std_logic;
-            seven_seg_out       : out std_logic_vector(6 downto 0)
+            clk_25MHz, reset      : in std_logic;
+            mode_select           : in std_logic;
+            seven_seg_out_0       : out std_logic_vector(6 downto 0);
+            seven_seg_out_1       : out std_logic_vector(6 downto 0);
+            seven_seg_out_2       : out std_logic_vector(6 downto 0);
+            seven_seg_out_3       : out std_logic_vector(6 downto 0);
+            seven_seg_out_4       : out std_logic_vector(6 downto 0);
+            seven_seg_out_5       : out std_logic_vector(6 downto 0)
         );
     end component display_7seg;
 
@@ -497,10 +499,13 @@ begin
     port map (
         clk_25MHz => clock_25Mhz,
         reset => s_rst,
-        mouse_cursor_row => s_mouse_cursor_row,
-        mouse_cursor_column => s_mouse_cursor_column,
-        mouse_dir_toggle => SW(0),
-        seven_seg_out => HEX0
+        mode_select => SW(0),
+        seven_seg_out_0 => HEX0,
+        seven_seg_out_1 => HEX1,
+        seven_seg_out_2 => HEX2,
+        seven_seg_out_3 => HEX3,
+        seven_seg_out_4 => HEX4,
+        seven_seg_out_5 => HEX5
     );
 
 end seven_seg_test;

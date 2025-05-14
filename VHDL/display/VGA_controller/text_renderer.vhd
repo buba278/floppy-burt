@@ -46,7 +46,7 @@ begin
             rom_mux_output      => s_char_pixel_on
         );
 
-    process (current_row, current_col, s_char_pixel_on, s_)
+    process (current_row, current_col, s_char_pixel_on, s_char_address_slice)
         variable v_rel_row_int : integer;
         variable v_rel_col_int : integer;
 
