@@ -6,73 +6,63 @@ USE  IEEE.STD_LOGIC_UNSIGNED.all;
 ENTITY bird_renderer IS
 
 	PORT ( 
-		left_button, right_button : IN std_logic;
-		VGA_VS : IN std_logic;
-		pixel_row, pixel_column	: IN std_logic_vector(9 DOWNTO 0);
-        bird_visible : OUT std_logic;
-		red, green, blue : OUT std_logic_vector(3 downto 0)
+		left_button, right_button 	: IN std_logic;
+		VGA_VS 						: IN std_logic;
+		current_row, current_col	: IN std_logic_vector(9 DOWNTO 0);
+        bird_visible 				: OUT std_logic;
+		red, green, blue 			: OUT std_logic_vector(3 downto 0)
 	);		
 END ENTITY bird_renderer;
 
 architecture behaviour of bird_renderer is
 
-	constant acceleration : integer := 1;
+	signal s_bird_on					: std_logic_vector(3 DOWNTO 0);
+	SIGNAL s_bird_on_bool				: std_logic;
+	SIGNAL s_size 						: std_logic_vector(9 DOWNTO 0);  
 
-	signal bird_on					: std_logic_vector(3 DOWNTO 0);
-	SIGNAL bird_on_bool				: std_logic;
-	SIGNAL size 					: std_logic_vector(9 DOWNTO 0);  
-	SIGNAL bird_y_pos 				: std_logic_vector(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(230,10);
-	signal bird_x_pos				: std_logic_vector(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(100,10);
-	signal velocity					: integer range -10 to 10;
-	signal vert_sync_div			: integer range 0 to 1000 := 0;
+	SIGNAL s_bird_y_pos 				: std_logic_vector(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(230,10);
+	signal s_bird_x_pos					: std_logic_vector(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(100,10);
+
+	signal s_reset_vel					: std_logic := '0';
+	signal s_vel						: integer := 0;
 
 BEGIN           
 
-	size <= CONV_STD_LOGIC_VECTOR(10,10);
+	-- radius of ball & x pos
+	s_size <= CONV_STD_LOGIC_VECTOR(10,10);
+	s_bird_x_pos <= CONV_STD_LOGIC_VECTOR(100,10);
 
-	bird_on_bool <= '1' when ( (bird_x_pos - size <= pixel_column) and (pixel_column <= bird_x_pos + size) 	-- x_pos - size <= pixel_column <= x_pos + size
-						and (bird_y_pos - size <= pixel_row) and (pixel_row <= bird_y_pos + size) )  else	-- y_pos - size <= pixel_row <= y_pos + size
+	s_bird_on_bool <= '1' when ( (s_bird_x_pos - s_size <= current_col) and (current_col <= s_bird_x_pos + s_size) 	-- x_pos - s_size <= current_col <= x_pos + s_size
+						and (s_bird_y_pos - s_size <= current_row) and (current_row <= s_bird_y_pos + s_size) )  else	-- y_pos - s_size <= current_row <= y_pos + s_size
 				'0';
 
-	bird_on <= (others => bird_on_bool);
-	-- Colours for pixel data on video signal
-	-- Keeping background white and square in red
-	red <=  "1111";
-	-- Turn off Green and Blue when displaying square
-	green <= not bird_on;
-	blue <=  not bird_on;
+	s_bird_on <= (others => s_bird_on_bool);
 
-    bird_visible <= bird_on_bool;
+	-- ball red when visible
+	red <=  s_bird_on;
+	green <= not s_bird_on;
+	blue <=  not s_bird_on;
 
-	process(left_button, VGA_VS)
+	-- renederer output port
+    bird_visible <= s_bird_on_bool;
+
+	s_reset_vel <= right_button;
+	-- s_bird_y_pos <= CONV_STD_LOGIC_VECTOR(300,10) when left_button = '0' else (s_bird_y_pos - CONV_STD_LOGIC_VECTOR(1,10));
+
+	process (VGA_VS)
+		variable v_bird_y_pos 	: std_logic_vector(9 DOWNTO 0);
+		variable v_vel			: integer range -10 to 10;
 	begin
-		if (left_button = '1') then
-			velocity <= -5;
+		if (rising_edge(VGA_VS) and left_button = '1') then
+			v_vel := s_vel + 1;
+			s_vel <= v_vel;
+
+			v_bird_y_pos := s_bird_y_pos + CONV_STD_LOGIC_VECTOR(v_vel,10);
+			s_bird_y_pos <= v_bird_y_pos;
 		end if;
 
-		if (VGA_VS = '1') then
-			vert_sync_div <= vert_sync_div + 1;
-
-			if (vert_sync_div = 50) then
-
-				bird_y_pos <= bird_y_pos + velocity;
-				velocity <= velocity + acceleration;
-				if (velocity > 5) then
-					velocity <= 5;
-				elsif (velocity < -5) then
-					velocity <= -5;
-				end if;
-
-				if (bird_y_pos > CONV_STD_LOGIC_VECTOR(470,10)) then
-					bird_y_pos <= CONV_STD_LOGIC_VECTOR(230,10);
-				elsif 
-					(bird_y_pos < CONV_STD_LOGIC_VECTOR(0,10)) then
-					bird_y_pos <= CONV_STD_LOGIC_VECTOR(230,10);					
-				end if;
-
-				vert_sync_div <= 0;
-			end if;
-			
+		if (s_reset_vel = '1') then
+			s_vel <= -15;
 		end if;
 	end process;
 
