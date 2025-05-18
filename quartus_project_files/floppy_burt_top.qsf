@@ -264,8 +264,11 @@ set_global_assignment -name PARTITION_COLOR 16764057 -entity DE0_CV_Default -sec
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -entity DE0_CV_Default -section_id Top
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+set_global_assignment -name TIMING_ANALYZER_MULTICORNER_ANALYSIS ON
+set_global_assignment -name SMART_RECOMPILE ON
+set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
+set_global_assignment -name VHDL_FILE ../VHDL/game_logic/pipe_renderer.vhd
 set_global_assignment -name SOURCE_FILE pll25MHz.cmp
-set_global_assignment -name VHDL_FILE ../VHDL/game_logic/pipes.vhd
 set_global_assignment -name VHDL_FILE ../VHDL/game_logic/background.vhd
 set_global_assignment -name VHDL_FILE ../VHDL/game_logic/bird_renderer.vhd
 set_global_assignment -name VHDL_FILE ../VHDL/interface/ps2/mouse.vhd
@@ -281,7 +284,4 @@ set_global_assignment -name SOURCE_FILE db/floppy_burt_top.cmp.rdb
 set_global_assignment -name VHDL_FILE ../VHDL/display/7Seg/bcd_to_7seg_char.vhd
 set_global_assignment -name VHDL_FILE ../VHDL/display/7Seg/bcd_to_7seg_digit.vhd
 set_global_assignment -name VHDL_FILE ../VHDL/display/7Seg/display_7seg.vhd
-set_global_assignment -name TIMING_ANALYZER_MULTICORNER_ANALYSIS ON
-set_global_assignment -name SMART_RECOMPILE ON
-set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

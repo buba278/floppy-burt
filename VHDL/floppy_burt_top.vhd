@@ -427,6 +427,18 @@ architecture interim of floppy_burt_top is
         );		
     end component bird_renderer;
 
+    component pipe_renderer is
+    port(
+        clk, reset                                      : IN std_logic;
+        VGA_VS                                          : IN std_logic;
+        current_row, current_col                        : IN std_logic_vector(9 downto 0);
+        pipe1_visible, pipe2_visible, pipe3_visible     : OUT std_logic;
+		red1, green1, blue1                             : OUT std_logic_vector(3 downto 0);
+        red2, green2, blue2                             : OUT std_logic_vector(3 downto 0);
+        red3, green3, blue3                             : OUT std_logic_vector(3 downto 0)
+    );
+    end component pipe_renderer;
+
     component display_7seg is
         port (
             clk_25MHz, reset      : in std_logic;
@@ -447,6 +459,12 @@ architecture interim of floppy_burt_top is
     -- ball renderer
     signal s_bird_visible : std_logic;
     signal s_bird_r, s_bird_g, s_bird_b : std_logic_vector(3 downto 0);
+
+    -- pipe renderer
+    signal s_pipe1_visible, s_pipe2_visible, s_pipe3_visible : std_logic;
+    signal s_pipe1_r, s_pipe1_g, s_pipe1_b : std_logic_vector(3 downto 0);
+    signal s_pipe2_r, s_pipe2_g, s_pipe2_b : std_logic_vector(3 downto 0);
+    signal s_pipe3_r, s_pipe3_g, s_pipe3_b : std_logic_vector(3 downto 0);
 
     -- text
     signal s_char : std_logic_vector(47 downto 0);
@@ -550,6 +568,29 @@ begin
             green => s_bird_g,
             blue => s_bird_b
         );	
+
+    p1: pipe_renderer
+        port map (
+            -- input
+            clk => clock_25Mhz,
+            reset => s_rst,
+            VGA_VS => s_VGA_VS,
+            current_row => s_pix_row,
+            current_col => s_pix_col,
+            -- output
+            pipe1_visible => s_pipe1_visible,
+            pipe2_visible => s_pipe2_visible,
+            pipe3_visible => s_pipe3_visible,
+            red1 => s_pipe1_r,
+            green1 => s_pipe1_g,
+            blue1 => s_pipe1_b,
+            red2 => s_pipe2_r,
+            green2 => s_pipe2_g,
+            blue2 => s_pipe2_b,
+            red3 => s_pipe3_r,
+            green3 => s_pipe3_g,
+            blue3 => s_pipe3_b
+        );
         
     d1: display_7seg
     port map (
@@ -564,11 +605,13 @@ begin
         seven_seg_out_3 => HEX3,
         seven_seg_out_4 => HEX4,
         seven_seg_out_5 => HEX5
-    );
+        );
 
     -- ======= RENDERER =======
 
-    process(s_bird_r,s_bird_g,s_bird_b,s_bird_visible,s_text_r,s_text_g,s_text_b,s_text_visible)
+    process(s_bird_r,s_bird_g,s_bird_b,s_bird_visible,s_text_r,s_text_g,s_text_b,s_text_visible, 
+            s_pipe1_r,s_pipe1_g,s_pipe1_b,s_pipe1_visible, s_pipe2_r,s_pipe2_g,s_pipe2_b,s_pipe2_visible,
+            s_pipe3_r,s_pipe3_g,s_pipe3_b,s_pipe3_visible)
         variable BG_R : std_logic_vector(3 downto 0) := "0000";
         variable BG_G : std_logic_vector(3 downto 0) := "0000";
         variable BG_B : std_logic_vector(3 downto 0) := "0000";
@@ -584,6 +627,27 @@ begin
             s_final_r <= s_bird_r;
             s_final_g <= s_bird_g;
             s_final_b <= s_bird_b;
+        end if;
+
+        -- pipe1
+        if (s_pipe1_visible = '1') then
+            s_final_r <= s_pipe1_r;
+            s_final_g <= s_pipe1_g;
+            s_final_b <= s_pipe1_b;
+        end if;
+
+        -- pipe2
+        if (s_pipe2_visible = '1') then
+            s_final_r <= s_pipe2_r;
+            s_final_g <= s_pipe2_g;
+            s_final_b <= s_pipe2_b;
+        end if;
+
+        -- pipe3
+        if (s_pipe3_visible = '1') then
+            s_final_r <= s_pipe3_r;
+            s_final_g <= s_pipe3_g;
+            s_final_b <= s_pipe3_b;
         end if;
 
         -- text

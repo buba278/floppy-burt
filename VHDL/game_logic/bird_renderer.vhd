@@ -51,7 +51,7 @@ BEGIN
 
 	process (VGA_VS)
 		variable v_bird_y_pos 	: std_logic_vector(9 DOWNTO 0);
-		variable v_vel			: integer range -10 to 10;
+		variable v_vel			: integer;
 	begin
 		if (rising_edge(VGA_VS) and left_button = '1') then
 			v_vel := s_vel + 1;
@@ -62,7 +62,7 @@ BEGIN
 		end if;
 
 		if (s_reset_vel = '1') then
-			s_vel <= -15;
+			s_vel <= -10;
 		end if;
 	end process;
 
