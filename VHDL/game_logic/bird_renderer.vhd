@@ -10,7 +10,9 @@ ENTITY bird_renderer IS
 		VGA_VS 						: IN std_logic;
 		current_row, current_col	: IN std_logic_vector(9 DOWNTO 0);
         bird_visible 				: OUT std_logic;
-		red, green, blue 			: OUT std_logic_vector(3 downto 0)
+		red, green, blue 			: OUT std_logic_vector(3 downto 0);
+		bird_y_pos 					: OUT std_logic_vector(9 DOWNTO 0);
+		bird_x_pos					: OUT std_logic_vector(9 DOWNTO 0)
 	);		
 END ENTITY bird_renderer;
 
@@ -48,6 +50,9 @@ BEGIN
 
 	s_reset_vel <= right_button;
 	-- s_bird_y_pos <= CONV_STD_LOGIC_VECTOR(300,10) when left_button = '0' else (s_bird_y_pos - CONV_STD_LOGIC_VECTOR(1,10));
+
+	bird_x_pos <= s_bird_x_pos;
+	bird_y_pos <= s_bird_y_pos;
 
 	process (VGA_VS)
 		variable v_bird_y_pos 	: std_logic_vector(9 DOWNTO 0);

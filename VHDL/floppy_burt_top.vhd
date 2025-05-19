@@ -1,6 +1,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
+use work.fsm_states_pkg.all;
 
 entity floppy_burt_top is
     port (
@@ -18,361 +20,11 @@ entity floppy_burt_top is
 end floppy_burt_top; 
 
 configuration config of floppy_burt_top is
-    for interim -- change to desired architecture
+    for test_game -- change to desired architecture
     end for;
 end config;
 
-architecture vga_test_ball of floppy_burt_top is
-
-    component VGA_SYNC is
-        port (
-            clock_25Mhz : in STD_LOGIC; 
-            red, green, blue : in STD_LOGIC_VECTOR(3 downto 0);
-            red_out, green_out, blue_out : out STD_LOGIC_VECTOR(3 downto 0);
-            horiz_sync_out, vert_sync_out : out STD_LOGIC;
-            pixel_row, pixel_column: out STD_LOGIC_VECTOR(9 downto 0)
-        );
-    end component VGA_SYNC;
-
-    component ball IS
-        port (
-            clk : in std_logic;
-            pixel_row, pixel_column	: in std_logic_vector(9 downto 0);
-            red, green, blue : out std_logic_vector(3 downto 0)
-        );		
-    end component ball;
-
-    component pll25MHz is
-        port (
-            refclk   : in  std_logic := '0'; --  refclk.clk
-            rst      : in  std_logic := '0'; --   reset.reset
-            outclk_0 : out std_logic;        -- outclk0.clk
-            locked   : out std_logic         --  locked.export
-        );
-    end component pll25MHz;
-
-    -- INTERMEDIATE SIGNALS
-    signal clock_25Mhz : std_logic;
-    signal s_rst : std_logic; -- can link to board reset if want
-    signal s_locked : std_logic; -- ? clock stability
-
-    signal s_pix_row : std_logic_vector(9 downto 0);
-    signal s_pix_col : std_logic_vector(9 downto 0);
-    signal s_red : std_logic_vector(3 downto 0);
-    signal s_green : std_logic_vector(3 downto 0);
-    signal s_blue : std_logic_vector(3 downto 0);
-
-    -- need to know fpga pin ports:
-    -- for sync and colors
-
-begin
-
-    c1: pll25MHz
-        port map (
-            refclk => CLOCK_50,
-            rst => s_rst,
-            outclk_0 => clock_25Mhz,
-            locked => s_locked
-        );
-
-    b1: ball
-        port map (
-            -- input
-            clk => clock_25Mhz,
-            pixel_row => s_pix_row,
-            pixel_column => s_pix_col,
-            -- output
-            red => s_red,
-            green => s_green,
-            blue => s_blue
-        );
-
-    v1: VGA_SYNC
-        port map (
-            -- input
-            clock_25Mhz => clock_25Mhz,
-            red => s_red,
-            green => s_green,
-            blue => s_blue,
-            -- output
-            -- NOTE: might have to do a different approach for the color mapping - but just test it first
-            -- if not working then just make it the entire stdlogicvector, but check ball to see if changes needed
-            red_out => VGA_R, 
-            green_out => VGA_G,
-            blue_out => VGA_B,
-            horiz_sync_out => VGA_HS,
-            vert_sync_out => VGA_VS,
-            pixel_row => s_pix_row, 
-            pixel_column => s_pix_col
-        );
-
-end architecture;
-
-architecture vga_test_bouncy of floppy_burt_top is
-
-    component VGA_SYNC is
-        port (
-            clock_25Mhz : in STD_LOGIC; 
-            red, green, blue : in STD_LOGIC_VECTOR(3 downto 0);
-            red_out, green_out, blue_out : out STD_LOGIC_VECTOR(3 downto 0);
-            horiz_sync_out, vert_sync_out : out STD_LOGIC;
-            pixel_row, pixel_column: out STD_LOGIC_VECTOR(9 downto 0)
-        );
-    end component VGA_SYNC;
-
-    component bouncy_ball is
-	port ( 
-		pb1, pb2, clk, vert_sync	: IN std_logic;
-        pixel_row, pixel_column		: IN std_logic_vector(9 DOWNTO 0);
-        red, green, blue 			: OUT std_logic_vector(3 downto 0)
-	);		
-    end component bouncy_ball;
-
-    component pll25MHz is
-        port (
-            refclk   : in  std_logic := '0'; --  refclk.clk
-            rst      : in  std_logic := '0'; --   reset.reset
-            outclk_0 : out std_logic;        -- outclk0.clk
-            locked   : out std_logic         --  locked.export
-        );
-    end component pll25MHz;
-
-    -- INTERMEDIATE SIGNALS
-    signal clock_25Mhz : std_logic;
-    signal s_rst : std_logic; -- can link to board reset if want
-    signal s_locked : std_logic; -- ? clock stability
-
-    signal s_VGA_VS : std_logic;
-    signal s_VGA_HS : std_logic;
-    signal s_pix_row : std_logic_vector(9 downto 0);
-    signal s_pix_col : std_logic_vector(9 downto 0);
-    signal s_red : std_logic_vector(3 downto 0);
-    signal s_green : std_logic_vector(3 downto 0);
-    signal s_blue : std_logic_vector(3 downto 0);
-
-    -- need to know fpga pin ports:
-    -- for sync and colors
-
-begin
-
-    c1: pll25MHz
-        port map (
-            refclk => CLOCK_50,
-            rst => s_rst,
-            outclk_0 => clock_25Mhz,
-            locked => s_locked
-        );
-
-    b1: bouncy_ball
-        port map (
-            -- input
-            pb1 => KEY(0), -- pushbutton
-            pb2 => KEY(1),
-            clk => clock_25Mhz,
-            vert_sync => s_VGA_VS,
-
-            pixel_row => s_pix_row,
-            pixel_column => s_pix_col,
-            -- output
-            red => s_red,
-            green => s_green,
-            blue => s_blue
-        );
-
-    v1: VGA_SYNC
-        port map (
-            -- input
-            clock_25Mhz => clock_25Mhz,
-            red => s_red,
-            green => s_green,
-            blue => s_blue,
-            -- output
-            red_out => VGA_R, 
-            green_out => VGA_G,
-            blue_out => VGA_B,
-            horiz_sync_out => s_VGA_HS,
-            vert_sync_out => s_VGA_VS,
-            pixel_row => s_pix_row, 
-            pixel_column => s_pix_col
-        );
-
-    -- rendering logic wants syncing (bouncy ball)
-    VGA_VS <= s_VGA_VS;
-    VGA_HS <= s_VGA_HS;
-
-end architecture;
-
-architecture vga_test_renderer of floppy_burt_top is
-    component VGA_SYNC is
-        port (
-            clock_25Mhz : in STD_LOGIC; 
-            red, green, blue : in STD_LOGIC_VECTOR(3 downto 0);
-            red_out, green_out, blue_out : out STD_LOGIC_VECTOR(3 downto 0);
-            horiz_sync_out, vert_sync_out : out STD_LOGIC;
-            pixel_row, pixel_column: out STD_LOGIC_VECTOR(9 downto 0)
-        );
-    end component VGA_SYNC;
-    component ball_renderer IS
-        port (
-            pixel_row, pixel_column	: in std_logic_vector(9 downto 0);
-            ball_visible : OUT std_logic;
-            red, green, blue : out std_logic_vector(3 downto 0)
-        );		
-    end component ball_renderer;
-    component text_renderer IS
-	PORT ( 
-        clk                                 : IN std_logic;
-        char_count                          : IN integer;
-        char_address                        : IN std_logic_vector(47 downto 0);
-		current_row, current_col	        : IN std_logic_vector(9 DOWNTO 0);
-        text_origin_col, text_origin_row    : IN std_logic_vector(9 DOWNTO 0);
-        text_scale                          : IN integer;
-        text_visible                        : OUT std_logic;
-		red, green, blue                    : OUT std_logic_vector(3 downto 0)
-	);		
-    END component text_renderer;
-    component pll25MHz is
-        port (
-            refclk   : in  std_logic := '0'; --  refclk.clk
-            rst      : in  std_logic := '0'; --   reset.reset
-            outclk_0 : out std_logic;        -- outclk0.clk
-            locked   : out std_logic         --  locked.export
-        );
-    end component pll25MHz;
-
-    -- ===== INTERMEDIATE SIGNALS =====
-    -- pll
-    signal clock_25Mhz, s_locked, s_rst : std_logic;
-
-    -- ball renderer
-    signal s_bird_visible : std_logic;
-    signal s_bird_r, s_bird_g, s_bird_b : std_logic_vector(3 downto 0);
-
-    -- text
-    signal s_char : std_logic_vector(47 downto 0);
-    signal s_char_count : integer;
-    signal s_text_r, s_text_g, s_text_b : std_logic_vector(3 downto 0);
-    signal s_text_visible : std_logic;
-    signal s_text_origin_col, s_text_origin_row : std_logic_vector(9 downto 0);
-    signal s_text_scale : integer;
-
-    -- full renderer
-    signal s_final_r, s_final_g, s_final_b : std_logic_vector(3 downto 0);
-    signal s_pix_row, s_pix_col : std_logic_vector(9 downto 0);
-
-    signal s_VGA_VS, s_VGA_HS : std_logic;
-    
-    constant char_hello : std_logic_vector(47 downto 0) :=
-        ("101000" & "100101" & "101100" & "101100" & "101111") & ("000000" & "000000" & "000000");
-    constant char_scorehash : std_logic_vector(47 downto 0) :=
-        ("010011" & "000011" & "001111" & "010010" & "000101" & "100000" & "100011") & ("000000");
-
-begin
-
-    -- pulled down
-    s_rst <= not RESET_N;
-
-    c1: pll25MHz
-        port map (
-            refclk => CLOCK_50,
-            rst => s_rst,
-            outclk_0 => clock_25Mhz,
-            locked => s_locked
-        );
-
-    v1: VGA_SYNC
-        port map (
-            -- input
-            clock_25Mhz => clock_25Mhz,
-            red => s_final_r,
-            green => s_final_g,
-            blue => s_final_b,
-            -- output
-            red_out => VGA_R, 
-            green_out => VGA_G,
-            blue_out => VGA_B,
-            horiz_sync_out => s_VGA_HS,
-            vert_sync_out => s_VGA_VS,
-            pixel_row => s_pix_row, -- what pixel we currently rendering? might need +1
-            pixel_column => s_pix_col
-        );  
-
-    b1: ball_renderer
-        port map (
-            -- input
-            pixel_row => s_pix_row,
-            pixel_column => s_pix_col,
-            -- output
-            ball_visible => s_bird_visible,
-            red => s_bird_r,
-            green => s_bird_g,
-            blue => s_bird_b
-        );
-
-    t1: text_renderer
-        port map (
-            -- input
-            clk => clock_25Mhz,
-            char_count => s_char_count,
-            char_address => s_char,
-            current_row => s_pix_row,
-            current_col => s_pix_col,
-            text_origin_col => s_text_origin_col,
-            text_origin_row => s_text_origin_row,
-            text_scale => s_text_scale,
-            -- output
-            text_visible => s_text_visible,
-            red => s_text_r,
-            green => s_text_g,
-            blue => s_text_b
-        );
-    
-    -- ======= RENDERER =======
-
-    process(s_bird_r,s_bird_g,s_bird_b,s_bird_visible,s_text_r,s_text_g,s_text_b,s_text_visible)
-        variable BG_R : std_logic_vector(3 downto 0) := "0000";
-        variable BG_G : std_logic_vector(3 downto 0) := "0000";
-        variable BG_B : std_logic_vector(3 downto 0) := "0000";
-    begin
-        -- Layers
-        -- background
-        s_final_r <= BG_R;
-        s_final_g <= BG_G;
-        s_final_b <= BG_B;
-
-        -- ball
-        if (s_bird_visible = '1') then
-            s_final_r <= s_bird_r;
-            s_final_g <= s_bird_g;
-            s_final_b <= s_bird_b;
-        end if;
-
-        -- text
-        if (s_text_visible = '1') then
-            s_final_r <= s_text_r;
-            s_final_g <= s_text_g;
-            s_final_b <= s_text_b;
-        end if;
-
-        
-    end process;
-
-    -- Final Assignment (no rgb as done by vga sync)
-    VGA_VS <= s_VGA_VS;
-    VGA_HS <= s_VGA_HS;
-
-
-    s_char_count <= 7 when KEY(0) = '1' else 5;
-    s_char <= char_scorehash when KEY(0) = '1' else -- 'SCORE #'
-              char_hello; -- 'hello'
-
-    s_text_origin_col <= "0000010100"; -- Column 20
-    s_text_origin_row <= "0000010100"; -- Row 20
-    s_text_scale <= 2;
-
-end architecture;
-
-architecture interim of floppy_burt_top is
+architecture test_game of floppy_burt_top is
     component VGA_SYNC is
         port (
             clock_25Mhz : in STD_LOGIC; 
@@ -386,11 +38,12 @@ architecture interim of floppy_burt_top is
     component text_renderer IS
 	PORT ( 
         clk                                 : IN std_logic;
-        char_count                          : IN integer;
-        char_address                        : IN std_logic_vector(47 downto 0);
+        --char_count                          : IN integer;
+        --char_address                        : IN std_logic_vector(47 downto 0);
 		current_row, current_col	        : IN std_logic_vector(9 DOWNTO 0);
-        text_origin_col, text_origin_row    : IN std_logic_vector(9 DOWNTO 0);
-        text_scale                          : IN integer;
+        --text_origin_col, text_origin_row    : IN std_logic_vector(9 DOWNTO 0);
+        --text_scale                          : IN integer;
+        game_state                          : IN state_type;
         text_visible                        : OUT std_logic;
 		red, green, blue                    : OUT std_logic_vector(3 downto 0)
 	);		
@@ -423,7 +76,9 @@ architecture interim of floppy_burt_top is
             VGA_VS : IN std_logic;
             current_row, current_col	: IN std_logic_vector(9 DOWNTO 0);
             bird_visible : OUT std_logic;
-            red, green, blue : OUT std_logic_vector(3 downto 0)
+            red, green, blue : OUT std_logic_vector(3 downto 0);
+            bird_y_pos 					: OUT std_logic_vector(9 DOWNTO 0);
+		    bird_x_pos					: OUT std_logic_vector(9 DOWNTO 0)
         );		
     end component bird_renderer;
 
@@ -452,6 +107,25 @@ architecture interim of floppy_burt_top is
         );
     end component display_7seg;
 
+    component collision is 
+        port (
+            bird_visible 	                                : IN std_logic;
+            pipe1_visible, pipe2_visible, pipe3_visible     : IN std_logic;
+            bird_x_pos, bird_y_pos                          : IN std_logic_vector(9 DOWNTO 0);
+            bird_collision						            : OUT std_logic
+        );
+    end component collision;
+
+    component game_state is
+        port (
+            mode_switches   : IN std_logic_vector(1 downto 0);
+            start_button    : IN std_logic;
+            bird_collision  : IN std_logic;
+            bird_reset      : OUT std_logic;
+            state           : OUT state_type
+        );
+    end component game_state;
+
     -- ===== INTERMEDIATE SIGNALS =====
     -- pll
     signal clock_25Mhz, s_locked, s_rst : std_logic;
@@ -459,6 +133,7 @@ architecture interim of floppy_burt_top is
     -- ball renderer
     signal s_bird_visible : std_logic;
     signal s_bird_r, s_bird_g, s_bird_b : std_logic_vector(3 downto 0);
+    signal s_bird_x_pos, s_bird_y_pos : std_logic_vector(9 downto 0);
 
     -- pipe renderer
     signal s_pipe1_visible, s_pipe2_visible, s_pipe3_visible : std_logic;
@@ -467,12 +142,12 @@ architecture interim of floppy_burt_top is
     signal s_pipe3_r, s_pipe3_g, s_pipe3_b : std_logic_vector(3 downto 0);
 
     -- text
-    signal s_char : std_logic_vector(47 downto 0);
-    signal s_char_count : integer;
+    --signal s_char : std_logic_vector(47 downto 0);
+    --signal s_char_count : integer;
     signal s_text_r, s_text_g, s_text_b : std_logic_vector(3 downto 0);
     signal s_text_visible : std_logic;
-    signal s_text_origin_col, s_text_origin_row : std_logic_vector(9 downto 0);
-    signal s_text_scale : integer;
+    --signal s_text_origin_col, s_text_origin_row : std_logic_vector(9 downto 0);
+    --signal s_text_scale : integer;
 
     -- full renderer
     signal s_final_r, s_final_g, s_final_b : std_logic_vector(3 downto 0);
@@ -485,11 +160,14 @@ architecture interim of floppy_burt_top is
     signal s_right_button	            : std_logic;
     signal s_mouse_cursor_row 			: std_logic_vector(9 DOWNTO 0); 
     signal s_mouse_cursor_column 		: std_logic_vector(9 DOWNTO 0);
+
+    -- collision
+    signal s_bird_collision : std_logic;
+
+    -- game state
+    signal s_game_state : state_type;
+    signal s_bird_reset : std_logic;
     
-    constant char_hello : std_logic_vector(47 downto 0) :=
-        ("001000" & "000101" & "001100" & "001100" & "001111") & ("000000" & "000000" & "000000");
-    constant char_scorehash : std_logic_vector(47 downto 0) :=
-        ("010011" & "000011" & "001111" & "010010" & "000101" & "100000" & "100011") & ("000000");
 
 begin
 
@@ -525,13 +203,10 @@ begin
         port map (
             -- input
             clk => clock_25Mhz,
-            char_count => s_char_count,
-            char_address => s_char,
             current_row => s_pix_row,
             current_col => s_pix_col,
-            text_origin_col => s_text_origin_col,
-            text_origin_row => s_text_origin_row,
-            text_scale => s_text_scale,
+            game_state => s_game_state,
+
             -- output
             text_visible => s_text_visible,
             red => s_text_r,
@@ -566,7 +241,9 @@ begin
             bird_visible => s_bird_visible,
             red => s_bird_r,
             green => s_bird_g,
-            blue => s_bird_b
+            blue => s_bird_b,
+            bird_y_pos => s_bird_y_pos,
+            bird_x_pos => s_bird_x_pos
         );	
 
     p1: pipe_renderer
@@ -606,6 +283,26 @@ begin
         seven_seg_out_4 => HEX4,
         seven_seg_out_5 => HEX5
         );
+
+    k1 : collision
+    port map (
+        bird_visible => s_bird_visible,
+        pipe1_visible => s_pipe1_visible,
+        pipe2_visible => s_pipe2_visible,
+        pipe3_visible => s_pipe3_visible,
+        bird_x_pos => s_bird_x_pos,
+        bird_y_pos => s_bird_y_pos,
+        bird_collision => s_bird_collision
+    );
+
+    g1 : game_state
+    port map (
+        mode_switches => SW(1 downto 0),
+        start_button => KEY(0),
+        bird_collision => s_bird_collision,
+        bird_reset => s_bird_reset,
+        state => s_game_state
+    );
 
     -- ======= RENDERER =======
 
@@ -664,13 +361,21 @@ begin
     VGA_HS <= s_VGA_HS;
 
     -- text config
-    s_char_count <= 7 when KEY(0) = '1' else 5;
-    s_char <= char_scorehash when KEY(0) = '1' else -- 'SCORE #'
-              char_hello; -- 'hello'
-    s_text_scale <= 1 when KEY(0) = '1' else 2;
+    --s_char_count <= 7 when KEY(0) = '1' else 5;
+    --s_char <= char_scorehash when KEY(0) = '1' else -- 'SCORE #'
+    --          char_hello; -- 'hello'
+    --s_text_scale <= 1 when KEY(0) = '1' else 2;
 
-    s_text_origin_col <= "0000010100"; -- Column 20
-    s_text_origin_row <= "0000010100"; -- Row 20
+    --s_text_origin_col <= "0000010100"; -- Column 20
+    --s_text_origin_row <= "0000010100"; -- Row 20
+
+    -- LEDR to represent game state
+    with s_game_state select
+        LEDR(9 downto 8) <= "00" when start,
+        "01" when practice,
+        "10" when easy,
+        "11" when hard,
+        "00" when others;
 
     -- mouse indicators
     LEDR(1) <= s_left_button;
