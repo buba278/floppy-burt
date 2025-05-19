@@ -45,7 +45,13 @@ architecture behaviour of text_renderer is
     constant char_start : std_logic_vector(47 downto 0) :=
         ("010011" & "010100" & "000001" & "010010" & "010100") & ("000000" & "000000" & "000000");  
     constant char_over : std_logic_vector(47 downto 0) :=
-        ("001111" & "010101" & "000101" & "010010") & ("000000" & "000000" & "000000" & "000000"); 
+        ("001111" & "010110" & "000101" & "010010") & ("000000" & "000000" & "000000" & "000000");
+    constant char_easy : std_logic_vector(47 downto 0) :=
+        ("000101" & "000001" & "010011" & "011001") & ("000000" & "000000" & "000000" & "000000");
+    constant char_hard : std_logic_vector(47 downto 0) :=
+        ("001000" & "000001" & "010010" & "000100") & ("000000" & "000000" & "000000" & "000000");
+    constant char_practice : std_logic_vector(47 downto 0) :=
+        ("010000" & "010010" & "000001" & "000011" & "010100" & "001001" & "000011" & "000101");     
 
 begin
 
@@ -68,9 +74,23 @@ begin
                 s_text_origin_row <= CONV_STD_LOGIC_VECTOR(240,10);
                 s_text_scale <= 4;
 
-            when practice | easy | hard =>
-                s_char_count <= 7;
-                s_char_address <= char_scorehash;
+            when practice =>
+                s_char_count <= 8;
+                s_char_address <= char_practice;
+                s_text_origin_col <= CONV_STD_LOGIC_VECTOR(20,10);
+                s_text_origin_row <= CONV_STD_LOGIC_VECTOR(20,10);
+                s_text_scale <= 1;
+            
+            when easy =>
+                s_char_count <= 4;
+                s_char_address <= char_easy;
+                s_text_origin_col <= CONV_STD_LOGIC_VECTOR(20,10);
+                s_text_origin_row <= CONV_STD_LOGIC_VECTOR(20,10);
+                s_text_scale <= 1;
+
+            when hard =>
+                s_char_count <= 4;
+                s_char_address <= char_hard;
                 s_text_origin_col <= CONV_STD_LOGIC_VECTOR(20,10);
                 s_text_origin_row <= CONV_STD_LOGIC_VECTOR(20,10);
                 s_text_scale <= 1;

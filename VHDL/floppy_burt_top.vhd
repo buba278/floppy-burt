@@ -274,7 +274,7 @@ begin
         -- in
         clk_25MHz => clock_25Mhz,
         reset => s_rst,
-        mode_select => SW(0),
+        mode_select => SW(2),
         -- out
         seven_seg_out_0 => HEX0,
         seven_seg_out_1 => HEX1,
@@ -298,7 +298,7 @@ begin
     g1 : game_state
     port map (
         mode_switches => SW(1 downto 0),
-        start_button => KEY(0),
+        start_button => not KEY(0),
         bird_collision => s_bird_collision,
         bird_reset => s_bird_reset,
         state => s_game_state
@@ -371,11 +371,16 @@ begin
 
     -- LEDR to represent game state
     with s_game_state select
-        LEDR(9 downto 8) <= "00" when start,
-        "01" when practice,
-        "10" when easy,
-        "11" when hard,
-        "00" when others;
+        LEDR(9 downto 5) <= "00001" when start,
+        "00010" when practice,
+        "00100" when easy,
+        "01000" when hard,
+        "10000" when game_over,
+        "00000" when others;
+
+    LEDR(3) <= s_bird_collision;
+
+    LEDR(2) <= KEY(0);
 
     -- mouse indicators
     LEDR(1) <= s_left_button;
