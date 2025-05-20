@@ -12,18 +12,26 @@ entity lfsr is
 end entity;
 
 architecture behaviour of lfsr is
-    signal lfsr_reg : std_logic_vector(9 downto 0) := "0000000001"; -- seed value
+    signal lfsr_reg : std_logic_vector(9 downto 0) := "0000110001"; -- seed value
 
     begin
 
     lfsr_out <= lfsr_reg;
 
     process(clk)
-    variable feedback : std_logic;
+    -- to implement reset
     begin
         if (rising_edge(clk)) then
-            feedback := lfsr_reg(2) xor lfsr_reg(9);
-            lfsr_reg <= lfsr_reg(9 downto 1) & feedback; -- shift left and insert feedback
+            lfsr_reg(9) <= lfsr_reg(8);
+            lfsr_reg(8) <= lfsr_reg(7);
+            lfsr_reg(7) <= lfsr_reg(6);
+            lfsr_reg(6) <= lfsr_reg(5);
+            lfsr_reg(5) <= lfsr_reg(4);
+            lfsr_reg(4) <= lfsr_reg(3);
+            lfsr_reg(3) <= lfsr_reg(2);
+            lfsr_reg(2) <= lfsr_reg(1);
+            lfsr_reg(1) <= lfsr_reg(0);
+            lfsr_reg(0) <= lfsr_reg(2) xor lfsr_reg(9);
         end if;
     end process;
 

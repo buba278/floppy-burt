@@ -28,14 +28,13 @@ architecture behaviour of pipe_renderer is
 
     constant pipe_width         : integer := 25;   -- radius of pipe
     constant screen_width       : integer := 640;
-    constant screen_height      : integer := 480;
 
     signal s_pipe1_on, s_pipe2_on, s_pipe3_on                   : std_logic_vector(3 downto 0);
     signal s_pipe1_on_bool, s_pipe2_on_bool, s_pipe3_on_bool    : std_logic;
 
-    signal pipe1_x_pos          : unsigned(9 downto 0) := to_unsigned(213,10);
-    signal pipe2_x_pos          : unsigned(9 downto 0) := to_unsigned(426,10);
-    signal pipe3_x_pos          : unsigned(9 downto 0) := to_unsigned(640,10);
+    signal pipe1_x_pos          : unsigned(9 downto 0) := to_unsigned(210,10);
+    signal pipe2_x_pos          : unsigned(9 downto 0) := to_unsigned(430,10);
+    signal pipe3_x_pos          : unsigned(9 downto 0) := to_unsigned(650,10);
     
     signal gap1_seed, gap2_seed, gap3_seed                      : unsigned(5 downto 0);
     signal gap1_y_pos, gap2_y_pos, gap3_y_pos                   : unsigned(11 downto 0) := to_unsigned(200,12);
@@ -49,15 +48,6 @@ begin
             reset   => reset,
             lfsr_out => lfsr_value
         ); 
-
-    gap1_seed <= unsigned(lfsr_value(9 downto 4));
-    gap1_y_pos <= to_unsigned(80,12) + (gap1_seed * 5);
-
-    gap2_seed <= unsigned(lfsr_value(7 downto 2));
-    gap2_y_pos <= to_unsigned(80,12) + (gap2_seed * 5);
-
-    gap3_seed <= unsigned(lfsr_value(5 downto 0));
-    gap3_y_pos <= to_unsigned(80,12) + (gap3_seed * 5);
 
     s_pipe1_on_bool <= '1' when  (unsigned(current_col) >= pipe1_x_pos - to_unsigned(pipe_width,10)) and (unsigned(current_col) <= pipe1_x_pos + to_unsigned(pipe_width,10))
                             and ((unsigned(current_row) <= gap1_y_pos - gap_height) or (unsigned(current_row) >= gap1_y_pos + gap_height))
@@ -90,19 +80,25 @@ begin
 
             if (to_integer(pipe1_x_pos) + pipe_width) <= 0 then
                 pipe1_x_pos <= to_unsigned(screen_width + pipe_width, 10);
+                gap1_seed <= unsigned(lfsr_value(9 downto 4));
+                gap1_y_pos <= to_unsigned(80,12) + (gap1_seed * 5);
             else
                 pipe1_x_pos <= pipe1_x_pos - 2;
             end if;
                 
             if (to_integer(pipe2_x_pos) + pipe_width) <= 0 then
                 pipe2_x_pos <= to_unsigned(screen_width + pipe_width, 10);
-            else 
+                gap2_seed <= unsigned(lfsr_value(7 downto 2));
+                gap2_y_pos <= to_unsigned(80,12) + (gap2_seed * 5);    
+                else 
                 pipe2_x_pos <= pipe2_x_pos - 2;
             end if;
 
             if (to_integer(pipe3_x_pos) + pipe_width) <= 0 then
                 pipe3_x_pos <= to_unsigned(screen_width + pipe_width, 10);
-            else
+                gap3_seed <= unsigned(lfsr_value(5 downto 0));
+                gap3_y_pos <= to_unsigned(80,12) + (gap3_seed * 5);
+                else
                 pipe3_x_pos <= pipe3_x_pos - 2;
             end if;
 
