@@ -28,6 +28,7 @@ begin
 
         case v_current_state is
             when start =>
+                bird_reset <= '0';
                 if start_button = '1' and mode_switches = "01" then
                     v_next_state := practice;
                 elsif start_button = '1' and mode_switches = "10" then
@@ -43,6 +44,9 @@ begin
                     v_next_state := start;
                 elsif bird_collision = '1' then
                     bird_reset <= '1';
+                    v_next_state := practice;
+                elsif bird_collision = '0' then
+                    bird_reset <= '0';
                     v_next_state := practice;
                 else
                     v_next_state := practice;

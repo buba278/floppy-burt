@@ -35,19 +35,15 @@ architecture test_game of floppy_burt_top is
         );
     end component VGA_SYNC;
 
-    component text_renderer IS
-	PORT ( 
-        clk                                 : IN std_logic;
-        --char_count                          : IN integer;
-        --char_address                        : IN std_logic_vector(47 downto 0);
-		current_row, current_col	        : IN std_logic_vector(9 DOWNTO 0);
-        --text_origin_col, text_origin_row    : IN std_logic_vector(9 DOWNTO 0);
-        --text_scale                          : IN integer;
-        game_state                          : IN state_type;
-        text_visible                        : OUT std_logic;
-		red, green, blue                    : OUT std_logic_vector(3 downto 0)
+    component total_text_renderer IS
+	PORT (
+        clk                                 : in std_logic;
+        current_row, current_col            : in std_logic_vector(9 downto 0);
+        game_state                          : in state_type;
+        text_visible                        : out std_logic;
+        red, green, blue                    : out std_logic_vector(3 downto 0)
 	);		
-    END component text_renderer;
+    END component total_text_renderer;
 
     component pll25MHz is
         port (
@@ -72,11 +68,13 @@ architecture test_game of floppy_burt_top is
 
     component bird_renderer IS
         port (
-            left_button, right_button : IN std_logic;
-            VGA_VS : IN std_logic;
+            left_button, right_button   : IN std_logic;
+            VGA_VS                      : IN std_logic;
             current_row, current_col	: IN std_logic_vector(9 DOWNTO 0);
-            bird_visible : OUT std_logic;
-            red, green, blue : OUT std_logic_vector(3 downto 0);
+            bird_reset					: IN std_logic;
+		    game_state 					: IN state_type;
+            bird_visible                : OUT std_logic;
+            red, green, blue            : OUT std_logic_vector(3 downto 0);
             bird_y_pos 					: OUT std_logic_vector(9 DOWNTO 0);
 		    bird_x_pos					: OUT std_logic_vector(9 DOWNTO 0)
         );		
@@ -142,12 +140,8 @@ architecture test_game of floppy_burt_top is
     signal s_pipe3_r, s_pipe3_g, s_pipe3_b : std_logic_vector(3 downto 0);
 
     -- text
-    --signal s_char : std_logic_vector(47 downto 0);
-    --signal s_char_count : integer;
     signal s_text_r, s_text_g, s_text_b : std_logic_vector(3 downto 0);
     signal s_text_visible : std_logic;
-    --signal s_text_origin_col, s_text_origin_row : std_logic_vector(9 downto 0);
-    --signal s_text_scale : integer;
 
     -- full renderer
     signal s_final_r, s_final_g, s_final_b : std_logic_vector(3 downto 0);
@@ -199,7 +193,7 @@ begin
             pixel_column => s_pix_col
         );  
 
-    t1: text_renderer
+    t1: total_text_renderer
         port map (
             -- input
             clk => clock_25Mhz,
@@ -237,6 +231,8 @@ begin
             VGA_VS => s_VGA_VS,
             current_row => s_pix_row, 
             current_col => s_pix_col,
+            bird_reset => s_bird_reset,
+            game_state => s_game_state,
             -- out
             bird_visible => s_bird_visible,
             red => s_bird_r,
