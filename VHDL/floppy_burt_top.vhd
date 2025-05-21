@@ -82,6 +82,7 @@ architecture interim of floppy_burt_top is
         clk, reset                                      : IN std_logic;
         VGA_VS                                          : IN std_logic;
         current_row, current_col                        : IN std_logic_vector(9 downto 0);
+        lfsr_out                                        : OUT std_logic_vector(9 downto 0);
         pipe1_visible, pipe2_visible, pipe3_visible     : OUT std_logic;
 		red1, green1, blue1                             : OUT std_logic_vector(3 downto 0);
         red2, green2, blue2                             : OUT std_logic_vector(3 downto 0);
@@ -93,6 +94,7 @@ architecture interim of floppy_burt_top is
         port (
             clk_25MHz, reset      : in std_logic;
             mode_select           : in std_logic;
+            seven_seg_input       : in std_logic_vector(9 downto 0);
             seven_seg_out_0       : out std_logic_vector(6 downto 0);
             seven_seg_out_1       : out std_logic_vector(6 downto 0);
             seven_seg_out_2       : out std_logic_vector(6 downto 0);
@@ -111,6 +113,7 @@ architecture interim of floppy_burt_top is
     signal s_bird_r, s_bird_g, s_bird_b : std_logic_vector(3 downto 0);
 
     -- pipe renderer
+    signal s_lfsr_out : std_logic_vector(9 downto 0);
     signal s_pipe1_visible, s_pipe2_visible, s_pipe3_visible : std_logic;
     signal s_pipe1_r, s_pipe1_g, s_pipe1_b : std_logic_vector(3 downto 0);
     signal s_pipe2_r, s_pipe2_g, s_pipe2_b : std_logic_vector(3 downto 0);
@@ -228,6 +231,7 @@ begin
             current_row => s_pix_row,
             current_col => s_pix_col,
             -- output
+            lfsr_out => s_lfsr_out,
             pipe1_visible => s_pipe1_visible,
             pipe2_visible => s_pipe2_visible,
             pipe3_visible => s_pipe3_visible,
@@ -248,6 +252,7 @@ begin
         clk_25MHz => clock_25Mhz,
         reset => s_rst,
         mode_select => SW(0),
+        seven_seg_input => s_lfsr_out,
         -- out
         seven_seg_out_0 => HEX0,
         seven_seg_out_1 => HEX1,
