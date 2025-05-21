@@ -32,6 +32,7 @@ architecture behaviour of bird_renderer is
 	signal s_vel						: integer := 0;
 
 	signal s_acceleration				: integer := 0;
+	signal s_flap_velocity				: integer := -7;
 
 	signal s_previous_game_state		: state_type;
 BEGIN           
@@ -66,7 +67,7 @@ BEGIN
 		if (bird_reset = '1') then
 			s_bird_y_pos <= CONV_STD_LOGIC_VECTOR(230,10);
 			s_bird_x_pos <= CONV_STD_LOGIC_VECTOR(100,10);
-		elsif (rising_edge(VGA_VS) and left_button = '1') then
+		elsif (rising_edge(VGA_VS)) then
 			v_vel := s_vel + s_acceleration;
 			s_vel <= v_vel;
 
@@ -80,26 +81,29 @@ BEGIN
 					s_bird_y_pos <= CONV_STD_LOGIC_VECTOR(230,10);
 					s_bird_x_pos <= CONV_STD_LOGIC_VECTOR(100,10);
 					s_vel <= 0;
+					s_flap_velocity <= 0;
 					s_acceleration <= 0;
 				when practice =>
 					s_bird_y_pos <= CONV_STD_LOGIC_VECTOR(230,10);
 					s_bird_x_pos <= CONV_STD_LOGIC_VECTOR(100,10);
 					s_vel <= 0;
+					s_flap_velocity <= -7;
 					s_acceleration <= 1;
 				when easy =>
 					s_bird_y_pos <= CONV_STD_LOGIC_VECTOR(230,10);
 					s_bird_x_pos <= CONV_STD_LOGIC_VECTOR(100,10);
-					s_vel <= 0;
+					s_vel <= 0;					
+					s_flap_velocity <= -7;
 					s_acceleration <= 1;
 				when hard =>
 					s_bird_y_pos <= CONV_STD_LOGIC_VECTOR(230,10);
 					s_bird_x_pos <= CONV_STD_LOGIC_VECTOR(100,10);
 					s_vel <= 0;
+					s_flap_velocity <= -7;
 					s_acceleration <= 1;
 				when game_over =>
-					s_bird_y_pos <= CONV_STD_LOGIC_VECTOR(230,10);
-					s_bird_x_pos <= CONV_STD_LOGIC_VECTOR(100,10);
 					s_vel <= 0;
+					s_flap_velocity <= 0;
 					s_acceleration <= 0;
 				when others =>
 					null;
@@ -108,7 +112,7 @@ BEGIN
 		end if;
 
 		if (s_reset_vel = '1') then
-			s_vel <= -7;
+			s_vel <= s_flap_velocity;
 		end if;
 	end process;
 
