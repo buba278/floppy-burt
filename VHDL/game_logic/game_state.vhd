@@ -67,7 +67,7 @@ begin
                 end if;
 
             when game_over =>
-                if start_button = '1' then
+                if start_button = '1' and mode_switches = "00" then
                     v_next_state := start;
                 else
                     v_next_state := game_over;

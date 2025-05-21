@@ -60,60 +60,65 @@ BEGIN
 	bird_x_pos <= s_bird_x_pos;
 	bird_y_pos <= s_bird_y_pos;
 
-	process (VGA_VS, game_state, bird_reset)
-		variable v_bird_y_pos 	: std_logic_vector(9 DOWNTO 0);
-		variable v_vel			: integer;
+	process (VGA_VS, bird_reset)
+		variable v_bird_x_pos 				: std_logic_vector(9 DOWNTO 0);
+		variable v_bird_y_pos 				: std_logic_vector(9 DOWNTO 0);
+		variable v_vel						: integer;
+		variable v_acceleration				: integer;
+		variable v_flap_velocity			: integer;
 	begin
 		if (bird_reset = '1') then
 			s_bird_y_pos <= CONV_STD_LOGIC_VECTOR(230,10);
 			s_bird_x_pos <= CONV_STD_LOGIC_VECTOR(100,10);
+			s_vel <= 0;
 		elsif (rising_edge(VGA_VS)) then
-			v_vel := s_vel + s_acceleration;
-			s_vel <= v_vel;
-
-			v_bird_y_pos := s_bird_y_pos + CONV_STD_LOGIC_VECTOR(v_vel,10);
-			s_bird_y_pos <= v_bird_y_pos;
-		end if;
-
-		if (game_state /= s_previous_game_state) then
 			case game_state is
 				when start =>
-					s_bird_y_pos <= CONV_STD_LOGIC_VECTOR(230,10);
-					s_bird_x_pos <= CONV_STD_LOGIC_VECTOR(100,10);
-					s_vel <= 0;
-					s_flap_velocity <= 0;
-					s_acceleration <= 0;
-				when practice =>
-					s_bird_y_pos <= CONV_STD_LOGIC_VECTOR(230,10);
-					s_bird_x_pos <= CONV_STD_LOGIC_VECTOR(100,10);
-					s_vel <= 0;
-					s_flap_velocity <= -7;
-					s_acceleration <= 1;
-				when easy =>
-					s_bird_y_pos <= CONV_STD_LOGIC_VECTOR(230,10);
-					s_bird_x_pos <= CONV_STD_LOGIC_VECTOR(100,10);
-					s_vel <= 0;					
-					s_flap_velocity <= -7;
-					s_acceleration <= 1;
-				when hard =>
-					s_bird_y_pos <= CONV_STD_LOGIC_VECTOR(230,10);
-					s_bird_x_pos <= CONV_STD_LOGIC_VECTOR(100,10);
-					s_vel <= 0;
-					s_flap_velocity <= -7;
-					s_acceleration <= 1;
+					v_flap_velocity := 0;
+					v_acceleration := 0;
+				when practice | easy | hard =>
+					v_flap_velocity := -7;
+					v_acceleration := 1;
 				when game_over =>
-					s_vel <= 0;
-					s_flap_velocity <= 0;
-					s_acceleration <= 0;
+					v_flap_velocity := 0;
+					v_acceleration := 0;
 				when others =>
-					null;
+					v_flap_velocity := 0;
+					v_acceleration := 0;
 			end case;
-			s_previous_game_state <= game_state;
+
+			if (game_state /= s_previous_game_state) then
+				
+				s_previous_game_state <= game_state;
+
+				case game_state is
+					when start | practice | easy | hard =>
+						v_bird_y_pos := CONV_STD_LOGIC_VECTOR(230,10);
+						v_bird_x_pos := CONV_STD_LOGIC_VECTOR(100,10);
+						v_vel := 0;
+					when game_over =>
+						v_vel := 0;
+					when others =>
+						null;
+				end case;
+				
+			else 
+				if (right_button ='1' and game_state /= game_over and game_state /= start) then
+					v_vel := v_flap_velocity;
+				else
+					v_vel := s_vel + v_acceleration;
+				end if;
+				
+				v_bird_y_pos := s_bird_y_pos + CONV_STD_LOGIC_VECTOR(v_vel,10);
+
+			end if;
+
+			s_bird_y_pos <= v_bird_y_pos;
+			s_bird_x_pos <= v_bird_x_pos;
+
+			s_vel <= v_vel;
 		end if;
 
-		if (s_reset_vel = '1') then
-			s_vel <= s_flap_velocity;
-		end if;
 	end process;
 
 END behaviour;
