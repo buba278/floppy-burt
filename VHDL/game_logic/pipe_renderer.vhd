@@ -27,12 +27,13 @@ architecture behaviour of pipe_renderer is
 
     signal lfsr_value           : std_logic_vector(9 downto 0);
 
-    constant pipe_width         : integer := 25;   -- radius of pipe
+    constant pipe_width         : integer := 50;    -- diameter of pipe
     constant screen_width       : integer := 640;
 
     signal s_pipe1_on, s_pipe2_on, s_pipe3_on                   : std_logic_vector(3 downto 0);
     signal s_pipe1_on_bool, s_pipe2_on_bool, s_pipe3_on_bool    : std_logic;
 
+    -- tracks the right edge of the pipes
     signal pipe1_x_pos          : unsigned(9 downto 0) := to_unsigned(215,10);
     signal pipe2_x_pos          : unsigned(9 downto 0) := to_unsigned(433,10);
     signal pipe3_x_pos          : unsigned(9 downto 0) := to_unsigned(661,10);
@@ -56,16 +57,16 @@ begin
     gap2_y_pos <= to_unsigned(80,12) + (gap2_seed * 5);
     gap3_y_pos <= to_unsigned(80,12) + (gap3_seed * 5);
 
-    s_pipe1_on_bool <= '1' when  (unsigned(current_col) >= pipe1_x_pos - to_unsigned(pipe_width,10)) and (unsigned(current_col) <= pipe1_x_pos + to_unsigned(pipe_width,10))
-                            and ((unsigned(current_row) <= gap1_y_pos - gap_height) or (unsigned(current_row) >= gap1_y_pos + gap_height))
+    s_pipe1_on_bool <= '1' when (to_integer(unsigned(current_col)) >= to_integer(pipe1_x_pos) - pipe_width) and (to_integer(unsigned(current_col)) <= to_integer(pipe1_x_pos))
+                            and ((to_integer(unsigned(current_row)) <= to_integer(gap1_y_pos) - to_integer(gap_height)) or (to_integer(unsigned(current_row)) >= to_integer(gap1_y_pos) + to_integer(gap_height)))
                             else '0';
 
-    s_pipe2_on_bool <= '1' when  (unsigned(current_col) >= pipe2_x_pos - to_unsigned(pipe_width,10)) and (unsigned(current_col) <= pipe2_x_pos + to_unsigned(pipe_width,10))
-                            and ((unsigned(current_row) <= gap2_y_pos - gap_height) or (unsigned(current_row) >= gap2_y_pos + gap_height))
+    s_pipe2_on_bool <= '1' when (to_integer(unsigned(current_col)) >= to_integer(pipe2_x_pos) - pipe_width) and (to_integer(unsigned(current_col)) <= to_integer(pipe2_x_pos))
+                            and ((to_integer(unsigned(current_row)) <= to_integer(gap2_y_pos) - to_integer(gap_height)) or (to_integer(unsigned(current_row)) >= to_integer(gap2_y_pos) + to_integer(gap_height)))
                             else '0';
 
-    s_pipe3_on_bool <= '1' when  (unsigned(current_col) >= pipe3_x_pos - to_unsigned(pipe_width,10)) and (unsigned(current_col) <= pipe3_x_pos + to_unsigned(pipe_width,10))
-                            and ((unsigned(current_row) <= gap3_y_pos - gap_height) or (unsigned(current_row) >= gap3_y_pos + gap_height))
+    s_pipe3_on_bool <= '1' when (to_integer(unsigned(current_col)) >= to_integer(pipe3_x_pos) - pipe_width) and (to_integer(unsigned(current_col)) <= to_integer(pipe3_x_pos))
+                            and ((to_integer(unsigned(current_row)) <= to_integer(gap3_y_pos) - to_integer(gap_height)) or (to_integer(unsigned(current_row)) >= to_integer(gap3_y_pos) + to_integer(gap_height)))
                             else '0';
 
     s_pipe1_on <= (others => s_pipe1_on_bool);
@@ -85,21 +86,22 @@ begin
     begin
         if rising_edge(VGA_VS) then
 
-            if (to_integer(pipe1_x_pos) + pipe_width) <= 0 then
+            -- need to adjust this comparison if changing the "speed" of the pipes to avoid negative values
+            if (to_integer(pipe1_x_pos)) <= 1 then
                 pipe1_x_pos <= to_unsigned(screen_width + pipe_width, 10);
                 gap1_seed <= unsigned(lfsr_value(9 downto 4));
             else
                 pipe1_x_pos <= pipe1_x_pos - 2;
             end if;
                 
-            if (to_integer(pipe2_x_pos) + pipe_width) <= 0 then
+            if (to_integer(pipe2_x_pos)) <= 1 then
                 pipe2_x_pos <= to_unsigned(screen_width + pipe_width, 10);
                 gap2_seed <= unsigned(lfsr_value(7 downto 2));    
                 else 
                 pipe2_x_pos <= pipe2_x_pos - 2;
             end if;
 
-            if (to_integer(pipe3_x_pos) + pipe_width) <= 0 then
+            if (to_integer(pipe3_x_pos)) <= 1 then
                 pipe3_x_pos <= to_unsigned(screen_width + pipe_width, 10);
                 gap3_seed <= unsigned(lfsr_value(5 downto 0));
                 else
