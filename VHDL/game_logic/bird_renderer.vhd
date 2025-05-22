@@ -35,6 +35,9 @@ architecture behaviour of bird_renderer is
 	signal s_flap_velocity				: integer := -7;
 
 	signal s_previous_game_state		: state_type;
+
+	signal s_left_button_one_shot 		: std_logic := '0';
+	signal s_previous_left_button		: std_logic := '0';
 BEGIN           
 
 	-- radius of ball & x pos
@@ -54,9 +57,6 @@ BEGIN
 	-- renederer output port
     bird_visible <= s_bird_on_bool;
 
-	s_reset_vel <= right_button;
-	-- s_bird_y_pos <= CONV_STD_LOGIC_VECTOR(300,10) when left_button = '0' else (s_bird_y_pos - CONV_STD_LOGIC_VECTOR(1,10));
-
 	bird_x_pos <= s_bird_x_pos;
 	bird_y_pos <= s_bird_y_pos;
 
@@ -66,6 +66,8 @@ BEGIN
 		variable v_vel						: integer;
 		variable v_acceleration				: integer;
 		variable v_flap_velocity			: integer;
+		variable v_left_button_one_shot 	: std_logic;
+		variable v_previous_left_button		: std_logic;
 	begin
 		if (bird_reset = '1') then
 			s_bird_y_pos <= CONV_STD_LOGIC_VECTOR(230,10);
@@ -87,6 +89,14 @@ BEGIN
 					v_acceleration := 0;
 			end case;
 
+			v_left_button_one_shot := s_left_button_one_shot;
+
+			if (left_button /= v_previous_left_button) then
+				v_left_button_one_shot := left_button;
+				s_left_button_one_shot <= v_left_button_one_shot;
+				s_previous_left_button <= left_button;
+			end if;
+
 			if (game_state /= s_previous_game_state) then
 				
 				s_previous_game_state <= game_state;
@@ -103,7 +113,7 @@ BEGIN
 				end case;
 				
 			else 
-				if (right_button ='1' and game_state /= game_over and game_state /= start) then
+				if (v_left_button_one_shot ='1' and game_state /= game_over and game_state /= start) then
 					v_vel := v_flap_velocity;
 				else
 					v_vel := s_vel + v_acceleration;
