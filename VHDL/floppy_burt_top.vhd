@@ -98,6 +98,7 @@ architecture test_game of floppy_burt_top is
             clk_25MHz, reset      : in std_logic;
             mode_select           : in std_logic;
             seven_seg_input       : in std_logic_vector(9 downto 0);
+            seven_seg_input       : in std_logic_vector(9 downto 0);
             seven_seg_out_0       : out std_logic_vector(6 downto 0);
             seven_seg_out_1       : out std_logic_vector(6 downto 0);
             seven_seg_out_2       : out std_logic_vector(6 downto 0);
@@ -145,6 +146,7 @@ architecture test_game of floppy_burt_top is
     signal s_bird_x_pos, s_bird_y_pos : std_logic_vector(9 downto 0);
 
     -- pipe renderer
+    signal s_lfsr_out : std_logic_vector(9 downto 0);
     signal s_lfsr_out : std_logic_vector(9 downto 0);
     signal s_pipe1_visible, s_pipe2_visible, s_pipe3_visible : std_logic;
     signal s_pipe1_r, s_pipe1_g, s_pipe1_b : std_logic_vector(3 downto 0);
@@ -267,6 +269,7 @@ begin
             current_col => s_pix_col,
             lfsr_value => s_lfsr_out,
             -- output
+            lfsr_out => s_lfsr_out,
             lfsr_out => s_lfsr_out,
             pipe1_visible => s_pipe1_visible,
             pipe2_visible => s_pipe2_visible,
