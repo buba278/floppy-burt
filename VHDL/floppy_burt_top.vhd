@@ -104,7 +104,7 @@ architecture interim of floppy_burt_top is
 
     component bg_renderer IS
 	PORT ( 
-        clock                       : IN std_logic;
+        vsync, clock                       : IN std_logic;
 		current_row, current_col	: IN std_logic_vector(9 DOWNTO 0); -- bgs only need 8bit but it alg
 		red, green, blue            : OUT std_logic_vector(3 downto 0) -- 4bit color
 	);		
@@ -271,6 +271,7 @@ begin
     bg1: bg_renderer
     port map (
         -- in
+        vsync => s_VGA_VS,
         clock => clock_25Mhz,
         current_row => s_pix_row,
         current_col => s_pix_col,
