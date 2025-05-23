@@ -88,31 +88,50 @@ BEGIN
     begin
         if(rising_edge(vsync)) then
             -- 2 is hella fast - need to do counter likely
-            s_fg_offset <= (s_fg_offset + 1) mod 512;
+            s_fg_offset <= (s_fg_offset + 2) mod 512;
         end if;
     end process;
 
-    process(s_fg_offset)
+    -- fix wraparound being the same foregound - consider positioning for it too
+    process(s_fg_offset, s_col_scaled)
         variable v_select_fg : integer;
     begin
         v_select_fg := s_fg_offset / 256;
 
+        -- fg1 condition
         if (v_select_fg = 0) then -- fg1
             s_fg_r <= s_fg1_r;
             s_fg_g <= s_fg1_g;
             s_fg_b <= s_fg1_b;
         end if;
 
+        -- fg1 wrap condition to fg2
+        if (v_select_fg = 0 and to_integer(unsigned(s_col_scaled)) >= (256 - s_fg_offset)) then -- fg2
+            s_fg_r <= s_fg2_r;
+            s_fg_g <= s_fg2_g;
+            s_fg_b <= s_fg2_b;
+        end if;
+
+        -- fg2 condition
         if (v_select_fg = 1) then -- fg2
             s_fg_r <= s_fg2_r;
             s_fg_g <= s_fg2_g;
             s_fg_b <= s_fg2_b;
         end if;
+
+        -- fg2 wrap condition to fg1
+        if (v_select_fg = 1 and to_integer(unsigned(s_col_scaled)) >= (256 - (s_fg_offset mod 256))) then -- fg1
+            s_fg_r <= s_fg1_r;
+            s_fg_g <= s_fg1_g;
+            s_fg_b <= s_fg1_b;
+        end if;
     end process;
 
     process(s_fg_r, s_fg_g, s_fg_b)
+        
     begin
         -- rendering layering
+        -- can do visibility flags based on color content - (0,0,0)
         red <= s_fg_r;
         green <= s_fg_g;
         blue <= s_fg_b;
