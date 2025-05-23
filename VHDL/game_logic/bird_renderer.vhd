@@ -79,7 +79,7 @@ BEGIN
 					v_flap_velocity := 0;
 					v_acceleration := 0;
 				when practice | easy | hard =>
-					v_flap_velocity := -7;
+					v_flap_velocity := -10;
 					v_acceleration := 1;
 				when game_over =>
 					v_flap_velocity := 0;
@@ -91,10 +91,13 @@ BEGIN
 
 			v_left_button_one_shot := s_left_button_one_shot;
 
-			if (left_button /= v_previous_left_button) then
+			-- if left button has changes then one shot equals left button
+			if (left_button /= s_previous_left_button) then
 				v_left_button_one_shot := left_button;
 				s_left_button_one_shot <= v_left_button_one_shot;
 				s_previous_left_button <= left_button;
+			else 
+				v_left_button_one_shot := '0';
 			end if;
 
 			if (game_state /= s_previous_game_state) then

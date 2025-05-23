@@ -72,7 +72,9 @@ begin
                 else
                     v_next_state := game_over;
                 end if;
-
+            
+            when others =>
+                v_next_state := start;
         end case;
 
         s_current_state <= v_next_state;
