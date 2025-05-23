@@ -307,7 +307,7 @@ begin
 
     g1 : game_state
     port map (
-        clk => clock_25Mhz,
+        clk => s_VGA_VS,
         mode_switches => SW(1 downto 0),
         start_button => not KEY(0),
         bird_collision => s_bird_collision,

@@ -21,7 +21,7 @@ architecture behaviour of game_state is
 
 begin
 
-    process (start_button, bird_collision)
+    process (clk)
         variable v_current_state : state_type;
         variable v_next_state : state_type;
     begin
