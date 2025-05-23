@@ -6,6 +6,7 @@ USE work.fsm_states_pkg.all;
 
 entity game_state is
     port (
+        clk             : IN std_logic;
         mode_switches   : IN std_logic_vector(1 downto 0);
         start_button    : IN std_logic;
         bird_collision  : IN std_logic;

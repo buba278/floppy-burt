@@ -267,6 +267,7 @@ set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 set_global_assignment -name TIMING_ANALYZER_MULTICORNER_ANALYSIS ON
 set_global_assignment -name SMART_RECOMPILE ON
 set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
+set_global_assignment -name VHDL_FILE ../VHDL/game_logic/lfsr.vhd
 set_global_assignment -name VHDL_FILE ../VHDL/display/VGA_controller/total_text_renderer.vhd
 set_global_assignment -name VHDL_FILE ../VHDL/game_logic/game_state.vhd
 set_global_assignment -name VHDL_FILE ../VHDL/game_logic/fsm_states_pkg.vhd

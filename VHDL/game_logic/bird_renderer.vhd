@@ -79,7 +79,7 @@ BEGIN
 					v_flap_velocity := 0;
 					v_acceleration := 0;
 				when practice | easy | hard =>
-					v_flap_velocity := -10;
+					v_flap_velocity := -11;
 					v_acceleration := 1;
 				when game_over =>
 					v_flap_velocity := 0;

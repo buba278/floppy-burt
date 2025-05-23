@@ -85,6 +85,7 @@ architecture test_game of floppy_burt_top is
         clk, reset                                      : IN std_logic;
         VGA_VS                                          : IN std_logic;
         current_row, current_col                        : IN std_logic_vector(9 downto 0);
+        lfsr_value                                      : IN std_logic_vector(9 downto 0);
         pipe1_visible, pipe2_visible, pipe3_visible     : OUT std_logic;
 		red1, green1, blue1                             : OUT std_logic_vector(3 downto 0);
         red2, green2, blue2                             : OUT std_logic_vector(3 downto 0);
@@ -116,6 +117,7 @@ architecture test_game of floppy_burt_top is
 
     component game_state is
         port (
+            clk             : IN std_logic;
             mode_switches   : IN std_logic_vector(1 downto 0);
             start_button    : IN std_logic;
             bird_collision  : IN std_logic;
@@ -123,6 +125,14 @@ architecture test_game of floppy_burt_top is
             state           : OUT state_type
         );
     end component game_state;
+
+    component lfsr
+        port (
+            clk             : IN std_logic;
+            reset           : IN std_logic;
+            lfsr_out        : OUT std_logic_vector(9 downto 0)
+        );
+    end component lfsr;
 
     -- ===== INTERMEDIATE SIGNALS =====
     -- pll
@@ -161,6 +171,9 @@ architecture test_game of floppy_burt_top is
     -- game state
     signal s_game_state : state_type;
     signal s_bird_reset : std_logic;
+
+    -- lfsr
+    signal s_lfsr_out : std_logic_vector(9 downto 0);
     
 
 begin
@@ -250,6 +263,7 @@ begin
             VGA_VS => s_VGA_VS,
             current_row => s_pix_row,
             current_col => s_pix_col,
+            lfsr_value => s_lfsr_out,
             -- output
             pipe1_visible => s_pipe1_visible,
             pipe2_visible => s_pipe2_visible,
@@ -293,11 +307,19 @@ begin
 
     g1 : game_state
     port map (
+        clk => clock_25Mhz,
         mode_switches => SW(1 downto 0),
         start_button => not KEY(0),
         bird_collision => s_bird_collision,
         bird_reset => s_bird_reset,
         state => s_game_state
+    );
+
+    l1 : lfsr
+    port map (
+        clk => clock_25Mhz,
+        reset => s_rst,
+        lfsr_out => s_lfsr_out
     );
 
     -- ======= RENDERER =======
