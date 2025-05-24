@@ -21,7 +21,9 @@ architecture behaviour of pipe_renderer is
 
     constant pipe_width         : integer := 50;    -- diameter of pipe
     constant screen_width       : integer := 640;
+    constant bird_x_pos         : integer := 100;    -- x position of the bird
     
+    signal score                : integer := 0;
     signal s_game_start_bool    : std_logic := '0';
 
     -- tracks the right edge of the pipes

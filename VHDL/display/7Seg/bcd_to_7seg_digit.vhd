@@ -10,7 +10,8 @@ end entity;
 
 architecture arc1 of bcd_to_sevenseg_digit  is
 begin
-     SevenSeg_out   <=  "1111001"  when bcd_digit = "0001"  else		-- 1
+     SevenSeg_out   <=  "1000000"  when bcd_digit = "0000"  else		-- 0
+	 					"1111001"  when bcd_digit = "0001"  else		-- 1
 						"0100100"  when bcd_digit = "0010"  else		-- 2
 						"0110000"  when bcd_digit = "0011"  else 		-- 3
 						"0011001"  when bcd_digit = "0100"  else		-- 4
@@ -19,6 +20,5 @@ begin
 						"1111000"  when bcd_digit = "0111"  else		-- 7
 						"0000000"  when bcd_digit = "1000"  else		-- 8
 						"0010000"  when bcd_digit = "1001"  else		-- 9
-						"1000000"  when bcd_digit = "0000"  else		-- 0	
 						"1111111";
 end architecture arc1; 
