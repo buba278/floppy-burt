@@ -1,7 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-use ieee.numeric_std.all;
 
 entity pipe_renderer is
     port(
@@ -10,7 +9,6 @@ entity pipe_renderer is
         current_row, current_col                        : IN std_logic_vector(9 downto 0);
         lfsr_value                                      : IN std_logic_vector(9 downto 0);
         pipe1_visible, pipe2_visible, pipe3_visible     : OUT std_logic;
-        red1, green1, blue1                             : OUT std_logic_vector(3 downto 0);
         red1, green1, blue1                             : OUT std_logic_vector(3 downto 0);
         red2, green2, blue2                             : OUT std_logic_vector(3 downto 0);
         red3, green3, blue3                             : OUT std_logic_vector(3 downto 0)
@@ -59,15 +57,11 @@ begin
     red1 <= not s_pipe1_on; green1 <= s_pipe1_on; blue1 <= not s_pipe1_on;
     red2 <= not s_pipe2_on; green2 <= s_pipe2_on; blue2 <= not s_pipe2_on;
     red3 <= not s_pipe3_on; green3 <= s_pipe3_on; blue3 <= not s_pipe3_on;
-    red1 <= not s_pipe1_on; green1 <= s_pipe1_on; blue1 <= not s_pipe1_on;
-    red2 <= not s_pipe2_on; green2 <= s_pipe2_on; blue2 <= not s_pipe2_on;
-    red3 <= not s_pipe3_on; green3 <= s_pipe3_on; blue3 <= not s_pipe3_on;
 
     pipe1_visible <= s_pipe1_on_bool;
     pipe2_visible <= s_pipe2_on_bool;
     pipe3_visible <= s_pipe3_on_bool;
 
-    -- moving pipes across the screen
     -- moving pipes across the screen
     process(VGA_VS)
     begin
@@ -79,21 +73,7 @@ begin
                 gap1_seed <= unsigned(lfsr_value(9 downto 4));
             else
                 pipe1_x_pos <= pipe1_x_pos - 2;
-        if rising_edge(VGA_VS) then
-
-            -- need to adjust this comparison if changing the "speed" of the pipes to avoid negative values
-            if (to_integer(pipe1_x_pos)) <= 1 then
-                pipe1_x_pos <= to_unsigned(screen_width + pipe_width, 10);
-                gap1_seed <= unsigned(lfsr_value(9 downto 4));
-            else
-                pipe1_x_pos <= pipe1_x_pos - 2;
             end if;
-                
-            if (to_integer(pipe2_x_pos)) <= 1 then
-                pipe2_x_pos <= to_unsigned(screen_width + pipe_width, 10);
-                gap2_seed <= unsigned(lfsr_value(7 downto 2));    
-                else 
-                pipe2_x_pos <= pipe2_x_pos - 2;
                 
             if (to_integer(pipe2_x_pos)) <= 1 then
                 pipe2_x_pos <= to_unsigned(screen_width + pipe_width, 10);
@@ -102,11 +82,6 @@ begin
                 pipe2_x_pos <= pipe2_x_pos - 2;
             end if;
 
-            if (to_integer(pipe3_x_pos)) <= 1 then
-                pipe3_x_pos <= to_unsigned(screen_width + pipe_width, 10);
-                gap3_seed <= unsigned(lfsr_value(5 downto 0));
-                else
-                pipe3_x_pos <= pipe3_x_pos - 2;
             if (to_integer(pipe3_x_pos)) <= 1 then
                 pipe3_x_pos <= to_unsigned(screen_width + pipe_width, 10);
                 gap3_seed <= unsigned(lfsr_value(5 downto 0));
