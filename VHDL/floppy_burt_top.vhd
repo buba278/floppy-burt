@@ -86,6 +86,7 @@ architecture test_game of floppy_burt_top is
         VGA_VS                                          : IN std_logic;
         current_row, current_col                        : IN std_logic_vector(9 downto 0);
         lfsr_value                                      : IN std_logic_vector(9 downto 0);
+        game_state                                      : IN state_type;
         pipe1_visible, pipe2_visible, pipe3_visible     : OUT std_logic;
 		red1, green1, blue1                             : OUT std_logic_vector(3 downto 0);
         red2, green2, blue2                             : OUT std_logic_vector(3 downto 0);
@@ -259,11 +260,12 @@ begin
         port map (
             -- input
             clk => clock_25Mhz,
-            reset => s_rst,
+            reset => s_bird_reset,
             VGA_VS => s_VGA_VS,
             current_row => s_pix_row,
             current_col => s_pix_col,
             lfsr_value => s_lfsr_out,
+            game_state => s_game_state,
             -- output
             pipe1_visible => s_pipe1_visible,
             pipe2_visible => s_pipe2_visible,
