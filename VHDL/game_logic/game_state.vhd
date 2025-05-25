@@ -7,8 +7,7 @@ USE work.fsm_states_pkg.all;
 entity game_state is
     port (
         clk             : IN std_logic;
-        mode_switches   : IN std_logic_vector(1 downto 0);
-        start_button    : IN std_logic;
+        keys            : IN std_logic_vector(3 downto 0);
         bird_collision  : IN std_logic;
         bird_reset      : OUT std_logic;
         state           : OUT state_type
@@ -21,65 +20,67 @@ architecture behaviour of game_state is
 
 begin
 
-    process (start_button, bird_collision)
+    process (clk)
         variable v_current_state : state_type;
         variable v_next_state : state_type;
     begin
-        v_current_state := s_current_state;
+        if (rising_edge(clk)) then
+            v_current_state := s_current_state;
 
-        case v_current_state is
-            when start =>
-                bird_reset <= '0';
-                if start_button = '1' and mode_switches = "01" then
-                    v_next_state := practice;
-                elsif start_button = '1' and mode_switches = "10" then
-                    v_next_state := easy;
-                elsif start_button = '1' and mode_switches = "11" then
-                    v_next_state := hard;
-                else
-                    v_next_state := start;
-                end if;
-
-            when practice =>
-                if start_button = '1' and mode_switches = "00" then
-                    v_next_state := start;
-                elsif bird_collision = '1' then
-                    bird_reset <= '1';
-                    v_next_state := practice;
-                elsif bird_collision = '0' then
+            case v_current_state is
+                when start =>
                     bird_reset <= '0';
-                    v_next_state := practice;
-                else
-                    v_next_state := practice;
-                end if;
+                    if keys(1) = '0' then
+                        v_next_state := practice;
+                    elsif keys(2) = '0' then
+                        v_next_state := easy;
+                    elsif keys(3) = '0' then
+                        v_next_state := hard;
+                    else
+                        v_next_state := start;
+                    end if;
 
-            when easy =>
-                if bird_collision = '1' then
-                    v_next_state := game_over;
-                else
-                    v_next_state := easy;
-                end if;
+                when practice =>
+                    if keys(0) = '0' then
+                        v_next_state := start;
+                    elsif bird_collision = '1' then
+                        bird_reset <= '1';
+                        v_next_state := practice;
+                    elsif bird_collision = '0' then
+                        bird_reset <= '0';
+                        v_next_state := practice;
+                    else
+                        v_next_state := practice;
+                    end if;
 
-            when hard =>
-                if bird_collision = '1' then
-                    v_next_state := game_over;
-                else
-                    v_next_state := hard;
-                end if;
+                when easy =>
+                    if bird_collision = '1' then
+                        v_next_state := game_over;
+                    else
+                        v_next_state := easy;
+                    end if;
 
-            when game_over =>
-                if start_button = '1' and mode_switches = "00" then
+                when hard =>
+                    if bird_collision = '1' then
+                        v_next_state := game_over;
+                    else
+                        v_next_state := hard;
+                    end if;
+
+                when game_over =>
+                    if keys(0) = '0' then
+                        v_next_state := start;
+                    else
+                        v_next_state := game_over;
+                    end if;
+                
+                when others =>
                     v_next_state := start;
-                else
-                    v_next_state := game_over;
-                end if;
-            
-            when others =>
-                v_next_state := start;
-        end case;
+            end case;
 
-        s_current_state <= v_next_state;
-        state <= v_next_state;
+            s_current_state <= v_next_state;
+            state <= v_next_state;
+        end if;
     end process;
 
 end architecture behaviour;
