@@ -7,8 +7,7 @@ USE work.fsm_states_pkg.all;
 entity game_state is
     port (
         clk             : IN std_logic;
-        mode_switches   : IN std_logic_vector(1 downto 0);
-        start_button    : IN std_logic;
+        keys            : IN std_logic_vector(3 downto 0);
         bird_collision  : IN std_logic;
         bird_reset      : OUT std_logic;
         state           : OUT state_type
@@ -31,18 +30,18 @@ begin
             case v_current_state is
                 when start =>
                     bird_reset <= '0';
-                    if start_button = '1' and mode_switches = "01" then
+                    if keys(1) = '0' then
                         v_next_state := practice;
-                    elsif start_button = '1' and mode_switches = "10" then
+                    elsif keys(2) = '0' then
                         v_next_state := easy;
-                    elsif start_button = '1' and mode_switches = "11" then
+                    elsif keys(3) = '0' then
                         v_next_state := hard;
                     else
                         v_next_state := start;
                     end if;
 
                 when practice =>
-                    if start_button = '1' and mode_switches = "00" then
+                    if keys(0) = '0' then
                         v_next_state := start;
                     elsif bird_collision = '1' then
                         bird_reset <= '1';
@@ -69,7 +68,7 @@ begin
                     end if;
 
                 when game_over =>
-                    if start_button = '1' and mode_switches = "00" then
+                    if keys(0) = '0' then
                         v_next_state := start;
                     else
                         v_next_state := game_over;

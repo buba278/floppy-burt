@@ -118,8 +118,7 @@ architecture test_game of floppy_burt_top is
     component game_state is
         port (
             clk             : IN std_logic;
-            mode_switches   : IN std_logic_vector(1 downto 0);
-            start_button    : IN std_logic;
+            keys            : IN std_logic_vector(3 downto 0);
             bird_collision  : IN std_logic;
             bird_reset      : OUT std_logic;
             state           : OUT state_type
@@ -308,8 +307,7 @@ begin
     g1 : game_state
     port map (
         clk => clock_25Mhz,
-        mode_switches => SW(1 downto 0),
-        start_button => not KEY(0),
+        keys => KEY(3 downto 0),
         bird_collision => s_bird_collision,
         bird_reset => s_bird_reset,
         state => s_game_state

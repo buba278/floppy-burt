@@ -52,18 +52,18 @@ architecture behaviour of total_text_renderer is
 
     constant char_scorehash : std_logic_vector(47 downto 0) :=
         ("010011" & "000011" & "001111" & "010010" & "000101" & "100000" & "100011") & ("000000");
-    constant char_hello : std_logic_vector(47 downto 0) :=
-        ("001000" & "000101" & "001100" & "001100" & "001111") & ("000000" & "000000" & "000000"); 
     constant char_start : std_logic_vector(47 downto 0) :=
         ("010011" & "010100" & "000001" & "010010" & "010100") & ("000000" & "000000" & "000000");  
     constant char_over : std_logic_vector(47 downto 0) :=
-        ("001111" & "010110" & "000101" & "010010") & ("000000" & "000000" & "000000" & "000000");
+        ("000111" & "000001" & "001101" & "000101") & ("001111" & "010110" & "000101" & "010010");
     constant char_easy : std_logic_vector(47 downto 0) :=
         ("000101" & "000001" & "010011" & "011001") & ("000000" & "000000" & "000000" & "000000");
     constant char_hard : std_logic_vector(47 downto 0) :=
         ("001000" & "000001" & "010010" & "000100") & ("000000" & "000000" & "000000" & "000000");
     constant char_practice : std_logic_vector(47 downto 0) :=
-        ("010000" & "010010" & "000001" & "000011" & "010100" & "001001" & "000011" & "000101");     
+        ("010000" & "010010" & "000001" & "000011" & "010100" & "001001" & "000011" & "000101");
+    constant char_empty : std_logic_vector(47 downto 0) :=
+        ("100000" & "100000" & "100000" & "100000") & ("100000" & "100000" & "100000" & "100000");     
 
 begin
 
@@ -112,37 +112,67 @@ begin
             when start =>
                 s_char_count_1 <= 5;
                 s_char_address_1 <= char_start;
-                s_text_origin_col_1 <= CONV_STD_LOGIC_VECTOR(320,10);
-                s_text_origin_row_1 <= CONV_STD_LOGIC_VECTOR(240,10);
+                s_text_origin_col_1 <= CONV_STD_LOGIC_VECTOR(240,10);
+                s_text_origin_row_1 <= CONV_STD_LOGIC_VECTOR(224,10);
                 s_text_scale_1 <= 4;
+
+                s_char_count_2 <= 8;
+                s_char_address_2 <= char_empty;
+                s_text_origin_col_2 <= CONV_STD_LOGIC_VECTOR(20,10);
+                s_text_origin_row_2 <= CONV_STD_LOGIC_VECTOR(20,10);
+                s_text_scale_2 <= 1;                
 
             when practice =>
                 s_char_count_1 <= 8;
                 s_char_address_1 <= char_practice;
                 s_text_origin_col_1 <= CONV_STD_LOGIC_VECTOR(20,10);
                 s_text_origin_row_1 <= CONV_STD_LOGIC_VECTOR(20,10);
-                s_text_scale_1 <= 1;
+                s_text_scale_1 <= 2;
+
+                s_char_count_2 <= 7;
+                s_char_address_2 <= char_scorehash;
+                s_text_origin_col_2 <= CONV_STD_LOGIC_VECTOR(20,10);
+                s_text_origin_row_2 <= CONV_STD_LOGIC_VECTOR(40,10);
+                s_text_scale_2 <= 2;
             
             when easy =>
                 s_char_count_1 <= 4;
                 s_char_address_1 <= char_easy;
                 s_text_origin_col_1 <= CONV_STD_LOGIC_VECTOR(20,10);
                 s_text_origin_row_1 <= CONV_STD_LOGIC_VECTOR(20,10);
-                s_text_scale_1 <= 1;
+                s_text_scale_1 <= 2;
+
+                s_char_count_2 <= 7;
+                s_char_address_2 <= char_scorehash;
+                s_text_origin_col_2 <= CONV_STD_LOGIC_VECTOR(20,10);
+                s_text_origin_row_2 <= CONV_STD_LOGIC_VECTOR(40,10);
+                s_text_scale_2 <= 2;
 
             when hard =>
                 s_char_count_1 <= 4;
                 s_char_address_1 <= char_hard;
                 s_text_origin_col_1 <= CONV_STD_LOGIC_VECTOR(20,10);
                 s_text_origin_row_1 <= CONV_STD_LOGIC_VECTOR(20,10);
-                s_text_scale_1 <= 1;
+                s_text_scale_1 <= 2;
+
+                s_char_count_2 <= 7;
+                s_char_address_2 <= char_scorehash;
+                s_text_origin_col_2 <= CONV_STD_LOGIC_VECTOR(20,10);
+                s_text_origin_row_2 <= CONV_STD_LOGIC_VECTOR(40,10);
+                s_text_scale_2 <= 2;
 
             when game_over =>
-                s_char_count_1 <= 4;
+                s_char_count_1 <= 8;
                 s_char_address_1 <= char_over;
-                s_text_origin_col_1 <= CONV_STD_LOGIC_VECTOR(320,10);
-                s_text_origin_row_1 <= CONV_STD_LOGIC_VECTOR(240,10);
+                s_text_origin_col_1 <= CONV_STD_LOGIC_VECTOR(185,10);
+                s_text_origin_row_1 <= CONV_STD_LOGIC_VECTOR(224,10);
                 s_text_scale_1 <= 4;
+
+                s_char_count_2 <= 7;
+                s_char_address_2 <= char_scorehash;
+                s_text_origin_col_2 <= CONV_STD_LOGIC_VECTOR(236,10);
+                s_text_origin_row_2 <= CONV_STD_LOGIC_VECTOR(260,10);
+                s_text_scale_2 <= 3;                
 
             when others =>
                 null;
