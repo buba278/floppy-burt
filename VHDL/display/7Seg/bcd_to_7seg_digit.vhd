@@ -5,7 +5,8 @@ use IEEE.std_logic_1164.all;
 
 entity bcd_to_sevenseg_digit is
      port (bcd_digit : in std_logic_vector(3 downto 0);
-           sevenseg_out : out std_logic_vector(6 downto 0));
+           sevenseg_out : out std_logic_vector(6 downto 0)
+	);
 end entity;
 
 architecture arc1 of bcd_to_sevenseg_digit  is
