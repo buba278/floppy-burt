@@ -121,8 +121,12 @@ architecture test_game of floppy_burt_top is
     component game_state is
         port (
             clk             : IN std_logic;
+            reset           : IN std_logic;
             keys            : IN std_logic_vector(3 downto 0);
+            mode_switch     : IN std_logic;
+            left_button     : IN std_logic;
             bird_collision  : IN std_logic;
+            score           : IN std_logic_vector(9 downto 0);
             bird_reset      : OUT std_logic;
             state           : OUT state_type
         );
@@ -313,8 +317,12 @@ begin
     g1 : game_state
     port map (
         clk => clock_25Mhz,
+        reset => s_rst,
         keys => KEY(3 downto 0),
+        mode_switch => SW(0),
+        left_button => s_left_button,
         bird_collision => s_bird_collision,
+        score => s_score_out,
         bird_reset => s_bird_reset,
         state => s_game_state
     );
@@ -407,5 +415,7 @@ begin
     -- mouse indicators
     LEDR(1) <= s_left_button;
     LEDR(0) <= s_right_button;
+
+    LEDR(4) <= s_bird_reset;
 
 end architecture;

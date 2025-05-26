@@ -29,9 +29,9 @@ architecture behaviour of pipe_renderer is
     signal s_game_start_bool    : std_logic := '0';
 
     -- tracks the right edge of the pipes
-    signal pipe1_x_pos          : unsigned(11 downto 0) := to_unsigned(640 + pipe_width,12);
-    signal pipe2_x_pos          : unsigned(11 downto 0) := to_unsigned(854 + pipe_width,12);
-    signal pipe3_x_pos          : unsigned(11 downto 0) := to_unsigned(1067 + pipe_width,12);
+    signal pipe1_x_pos          : unsigned(11 downto 0) := to_unsigned(690 + pipe_width,12);
+    signal pipe2_x_pos          : unsigned(11 downto 0) := to_unsigned(904 + pipe_width,12);
+    signal pipe3_x_pos          : unsigned(11 downto 0) := to_unsigned(1117 + pipe_width,12);
     signal pipe_velocity        : integer range 0 to 8  := 0;
     
     signal gap1_seed, gap2_seed, gap3_seed                      : unsigned(5 downto 0);
@@ -43,8 +43,8 @@ architecture behaviour of pipe_renderer is
 
 begin
 
-    -- game started when game_state is in practice, easy or hard
-    s_game_start_bool <= '1' when (game_state = practice) or (game_state = easy) or (game_state = hard) else '0';
+    -- game started when game_state is in practice, easy, medium or hard
+    s_game_start_bool <= '1' when (game_state = practice) or (game_state = easy) or (game_state = medium) or (game_state = hard) else '0';
 
     gap1_y_pos <= to_unsigned(80,12) + (gap1_seed * 5);
     gap2_y_pos <= to_unsigned(80,12) + (gap2_seed * 5);
@@ -76,17 +76,20 @@ begin
 
     score_out <= score;
 
-    with s_game_start_bool select
-    pipe_velocity <= 2 when '1',     -- pipes moving when game is running
-                     0 when others;  -- pipes stopped when game_state is in start or game_over
+    with game_state select
+    pipe_velocity <= 2 when practice,
+                     2 when easy, 
+                     4 when medium,
+                     4 when hard,
+                     0 when others; 
 
     -- moving pipes across the screen
     process(VGA_VS)
     begin
         if (reset = '1') then
-                pipe1_x_pos <= to_unsigned(640,12);
-                pipe2_x_pos <= to_unsigned(854,12);
-                pipe3_x_pos <= to_unsigned(1067,12);
+                pipe1_x_pos <= to_unsigned(690,12);
+                pipe2_x_pos <= to_unsigned(904,12);
+                pipe3_x_pos <= to_unsigned(1117,12);
 
                 gap1_seed <= unsigned(lfsr_value(9 downto 4));
                 gap2_seed <= unsigned(lfsr_value(7 downto 2));
@@ -95,19 +98,24 @@ begin
                 score <= (others => '0');
 
         elsif (rising_edge(VGA_VS)) then
-             if ((game_state /= previous_game_state) and (game_state /= game_over)) then 
+            if (game_state /= previous_game_state) then 
 
                 previous_game_state <= game_state;
 
-                pipe1_x_pos <= to_unsigned(640,12);
-                pipe2_x_pos <= to_unsigned(854,12);
-                pipe3_x_pos <= to_unsigned(1067,12);
-
-                gap1_seed <= unsigned(lfsr_value(9 downto 4));
-                gap2_seed <= unsigned(lfsr_value(7 downto 2));
-                gap3_seed <= unsigned(lfsr_value(5 downto 0));
-
-                score <= (others => '0');
+                case game_state is
+					when start | practice | easy =>
+                        pipe1_x_pos <= to_unsigned(690,12);
+                        pipe2_x_pos <= to_unsigned(904,12);
+                        pipe3_x_pos <= to_unsigned(1117,12);
+        
+                        gap1_seed <= unsigned(lfsr_value(9 downto 4));
+                        gap2_seed <= unsigned(lfsr_value(7 downto 2));
+                        gap3_seed <= unsigned(lfsr_value(5 downto 0));
+        
+                        score <= (others => '0');
+					when others =>
+						null;
+				end case;
 
             elsif (s_game_start_bool = '1') then
 

@@ -78,7 +78,7 @@ BEGIN
 				when start =>
 					v_flap_velocity := 0;
 					v_acceleration := 0;
-				when practice | easy | hard =>
+				when practice | easy | medium | hard =>
 					v_flap_velocity := -11;
 					v_acceleration := 1;
 				when game_over =>
@@ -105,7 +105,7 @@ BEGIN
 				s_previous_game_state <= game_state;
 
 				case game_state is
-					when start | practice | easy | hard =>
+					when start | practice | easy =>
 						v_bird_y_pos := CONV_STD_LOGIC_VECTOR(230,10);
 						v_bird_x_pos := CONV_STD_LOGIC_VECTOR(100,10);
 						v_vel := 0;
