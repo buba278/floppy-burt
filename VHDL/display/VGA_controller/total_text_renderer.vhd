@@ -111,7 +111,7 @@ begin
     process(game_state)
     begin
         case game_state is
-            when start =>
+            when start_menu =>
                 s_char_count_1 <= 5;
                 s_char_address_1 <= char_start;
                 s_text_origin_col_1 <= CONV_STD_LOGIC_VECTOR(240,10);

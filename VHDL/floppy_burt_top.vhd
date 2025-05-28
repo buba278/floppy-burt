@@ -13,9 +13,8 @@ entity floppy_burt_top is
         HEX0, HEX1, HEX2, HEX3, HEX4, HEX5 : out std_logic_vector(6 downto 0);
         VGA_R, VGA_G, VGA_B : out std_logic_vector(3 downto 0);
         VGA_HS, VGA_VS : out std_logic;
-        LEDR : out std_logic_vector(9 downto 0);
-        PS2_CLK : INOUT std_logic;
-        PS2_DAT : INOUT std_logic
+        PS2_CLK, PS2_DAT : INOUT std_logic;
+        LEDR : out std_logic_vector(9 downto 0)
     );
 end floppy_burt_top; 
 
@@ -140,6 +139,24 @@ architecture test_game of floppy_burt_top is
         );
     end component lfsr;
 
+    component bg_renderer IS
+	PORT ( 
+        vsync, clock                : IN std_logic;
+		current_row, current_col	: IN std_logic_vector(9 DOWNTO 0); -- bgs only need 8bit but it alg
+		red, green, blue            : OUT std_logic_vector(3 downto 0) -- 4bit color
+	);		
+    END component bg_renderer;
+
+    component screen_renderer IS
+	PORT ( 
+        clock                       : IN std_logic;
+        game_state                  : IN state_type;
+        current_col	                : IN std_logic_vector(9 DOWNTO 0);
+		current_row                	: IN std_logic_vector(9 DOWNTO 0);
+		red, green, blue            : OUT std_logic_vector(3 downto 0) -- 4bit color
+	);		
+    END component screen_renderer;
+
     -- ===== INTERMEDIATE SIGNALS =====
     -- pll
     signal clock_25Mhz, s_locked, s_rst : std_logic;
@@ -155,6 +172,12 @@ architecture test_game of floppy_burt_top is
     signal s_pipe2_r, s_pipe2_g, s_pipe2_b : std_logic_vector(3 downto 0);
     signal s_pipe3_r, s_pipe3_g, s_pipe3_b : std_logic_vector(3 downto 0);
     signal s_score_out : std_logic_vector(9 downto 0);
+
+    -- bg sprite
+    signal s_bg_r, s_bg_g, s_bg_b : std_logic_vector(3 downto 0);
+    -- screen sprites
+    -- bg sprite
+    signal s_screen_r, s_screen_g, s_screen_b : std_logic_vector(3 downto 0);
 
     -- text
     signal s_text_r, s_text_g, s_text_b : std_logic_vector(3 downto 0);
@@ -334,20 +357,44 @@ begin
         lfsr_out => s_lfsr_out
     );
 
+    bg1: bg_renderer
+    port map (
+        -- in
+        vsync => s_VGA_VS,
+        clock => clock_25Mhz,
+        current_row => s_pix_row,
+        current_col => s_pix_col,
+        -- output
+        red => s_bg_r,  
+        green => s_bg_g,
+        blue => s_bg_b
+    );
+
+    sc1: screen_renderer
+    port map (
+        -- in
+        game_state => s_game_state,
+        clock => clock_25Mhz,
+        current_row => s_pix_row,
+        current_col => s_pix_col,
+        -- output
+        red => s_screen_r,
+        green => s_screen_g,
+        blue => s_screen_b
+    );
+
     -- ======= RENDERER =======
 
     process(s_bird_r,s_bird_g,s_bird_b,s_bird_visible,s_text_r,s_text_g,s_text_b,s_text_visible, 
             s_pipe1_r,s_pipe1_g,s_pipe1_b,s_pipe1_visible, s_pipe2_r,s_pipe2_g,s_pipe2_b,s_pipe2_visible,
-            s_pipe3_r,s_pipe3_g,s_pipe3_b,s_pipe3_visible)
-        variable BG_R : std_logic_vector(3 downto 0) := "0000";
-        variable BG_G : std_logic_vector(3 downto 0) := "0000";
-        variable BG_B : std_logic_vector(3 downto 0) := "0000";
+            s_pipe3_r,s_pipe3_g,s_pipe3_b,s_pipe3_visible,
+            s_screen_r,s_screen_g,s_screen_b,s_game_state)
     begin
         -- Layers
         -- background
-        s_final_r <= BG_R;
-        s_final_g <= BG_G;
-        s_final_b <= BG_B;
+        s_final_r <= s_bg_r;
+        s_final_g <= s_bg_g;
+        s_final_b <= s_bg_b;
 
         -- ball
         if (s_bird_visible = '1') then
@@ -383,6 +430,13 @@ begin
             s_final_g <= s_text_g;
             s_final_b <= s_text_b;
         end if;
+
+        if ((s_game_state = start_menu or s_game_state = game_over)
+             and (s_screen_r /= "0000" or s_screen_g /= "0000" or s_screen_b /= "0000")) then
+            s_final_r <= s_screen_r;
+            s_final_g <= s_screen_g;
+            s_final_b <= s_screen_b;
+        end if;
         
     end process;
 
@@ -401,7 +455,7 @@ begin
 
     -- LEDR to represent game state
     with s_game_state select
-        LEDR(9 downto 5) <= "00001" when start,
+        LEDR(9 downto 5) <= "00001" when start_menu,
         "00010" when practice,
         "00100" when easy,
         "01000" when hard,

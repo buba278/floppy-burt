@@ -75,7 +75,7 @@ BEGIN
 			s_vel <= 0;
 		elsif (rising_edge(VGA_VS)) then
 			case game_state is
-				when start =>
+				when start_menu =>
 					v_flap_velocity := 0;
 					v_acceleration := 0;
 				when practice | easy | medium | hard =>
@@ -105,7 +105,7 @@ BEGIN
 				s_previous_game_state <= game_state;
 
 				case game_state is
-					when start | practice | easy =>
+					when start_menu | practice | easy =>
 						v_bird_y_pos := CONV_STD_LOGIC_VECTOR(230,10);
 						v_bird_x_pos := CONV_STD_LOGIC_VECTOR(100,10);
 						v_vel := 0;
@@ -116,7 +116,7 @@ BEGIN
 				end case;
 				
 			else 
-				if (v_left_button_one_shot ='1' and game_state /= game_over and game_state /= start) then
+				if (v_left_button_one_shot ='1' and game_state /= game_over and game_state /= start_menu) then
 					v_vel := v_flap_velocity;
 				else
 					v_vel := s_vel + v_acceleration;

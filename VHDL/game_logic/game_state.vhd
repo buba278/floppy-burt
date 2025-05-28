@@ -20,7 +20,7 @@ end entity game_state;
 
 architecture behaviour of game_state is
     -- State type declaration	
-    signal s_current_state : state_type := start;
+    signal s_current_state : state_type := start_menu;
 
 begin
 
@@ -32,19 +32,19 @@ begin
             v_current_state := s_current_state;
 
             case v_current_state is
-                when start =>
+                when start_menu =>
                     bird_reset <= '0';
                     if mode_switch = '0' and left_button = '1' then
                         v_next_state := practice;
                     elsif mode_switch = '1' and left_button = '1' then
                         v_next_state := easy;
                     else
-                        v_next_state := start;
+                        v_next_state := start_menu;
                     end if;
 
                 when practice =>
                     if keys(0) = '0' or reset = '1' then
-                        v_next_state := start;
+                        v_next_state := start_menu;
                     elsif bird_collision = '1' then
                         bird_reset <= '1';
                         v_next_state := practice;
@@ -84,13 +84,13 @@ begin
 
                 when game_over =>
                     if keys(0) = '0' or reset = '1' then
-                        v_next_state := start;
+                        v_next_state := start_menu;
                     else
                         v_next_state := game_over;
                     end if;
                 
                 when others =>
-                    v_next_state := start;
+                    v_next_state := start_menu;
             end case;
 
             s_current_state <= v_next_state;

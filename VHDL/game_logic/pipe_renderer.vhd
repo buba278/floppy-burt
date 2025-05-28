@@ -24,7 +24,7 @@ architecture behaviour of pipe_renderer is
     constant screen_width       : integer range 0 to 1023   := 640;
     constant bird_x_pos         : integer range 0 to 127    := 100;   -- x position of the bird
 
-    signal previous_game_state  : state_type := start;
+    signal previous_game_state  : state_type := start_menu;
     signal score                : std_logic_vector(9 downto 0) := (others => '0');
     signal s_game_start_bool    : std_logic := '0';
 
@@ -103,7 +103,7 @@ begin
                 previous_game_state <= game_state;
 
                 case game_state is
-					when start | practice | easy =>
+					when start_menu | practice | easy =>
                         pipe1_x_pos <= to_unsigned(690,12);
                         pipe2_x_pos <= to_unsigned(904,12);
                         pipe3_x_pos <= to_unsigned(1117,12);
