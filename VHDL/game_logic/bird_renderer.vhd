@@ -105,10 +105,12 @@ BEGIN
 				s_previous_game_state <= game_state;
 
 				case game_state is
-					when start | practice | easy =>
+					when start =>
 						v_bird_y_pos := CONV_STD_LOGIC_VECTOR(230,10);
 						v_bird_x_pos := CONV_STD_LOGIC_VECTOR(100,10);
 						v_vel := 0;
+					when practice | easy =>
+						v_vel := -11;
 					when game_over =>
 						v_vel := 0;
 					when others =>

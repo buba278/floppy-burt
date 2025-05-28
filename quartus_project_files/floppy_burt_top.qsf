@@ -41,7 +41,7 @@ set_global_assignment -name DEVICE 5CEBA4F23C7
 set_global_assignment -name TOP_LEVEL_ENTITY floppy_burt_top
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 18.1.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "15:06:29  MAY 02, 2025"
-set_global_assignment -name LAST_QUARTUS_VERSION "18.1.0 Standard Edition"
+set_global_assignment -name LAST_QUARTUS_VERSION "18.1.0 Lite Edition"
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
@@ -268,7 +268,6 @@ set_global_assignment -name TIMING_ANALYZER_MULTICORNER_ANALYSIS ON
 set_global_assignment -name SMART_RECOMPILE ON
 set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
 set_global_assignment -name VHDL_FILE ../VHDL/game_logic/lfsr.vhd
-set_global_assignment -name VHDL_FILE ../VHDL/display/VGA_controller/total_text_renderer.vhd
 set_global_assignment -name VHDL_FILE ../VHDL/game_logic/game_state.vhd
 set_global_assignment -name VHDL_FILE ../VHDL/game_logic/fsm_states_pkg.vhd
 set_global_assignment -name VHDL_FILE ../VHDL/game_logic/collision.vhd

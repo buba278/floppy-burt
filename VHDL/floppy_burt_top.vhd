@@ -35,15 +35,16 @@ architecture test_game of floppy_burt_top is
         );
     end component VGA_SYNC;
 
-    component total_text_renderer IS
+    component text_renderer IS
 	PORT (
         clk                                 : in std_logic;
         current_row, current_col            : in std_logic_vector(9 downto 0);
         game_state                          : in state_type;
+        score                               : in std_logic_vector(9 downto 0);
         text_visible                        : out std_logic;
         red, green, blue                    : out std_logic_vector(3 downto 0)
 	);		
-    END component total_text_renderer;
+    END component text_renderer;
 
     component pll25MHz is
         port (
@@ -212,13 +213,14 @@ begin
             pixel_column => s_pix_col
         );  
 
-    t1: total_text_renderer
+    t1: text_renderer
         port map (
             -- input
             clk => clock_25Mhz,
             current_row => s_pix_row,
             current_col => s_pix_col,
             game_state => s_game_state,
+            score => s_score_out,
 
             -- output
             text_visible => s_text_visible,
