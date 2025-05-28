@@ -29,10 +29,10 @@ architecture behaviour of bird_renderer is
 	signal s_bird_x_pos					: std_logic_vector(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(100,10);
 
 	signal s_reset_vel					: std_logic := '0';
-	signal s_vel						: integer := 0;
+	signal s_vel						: integer range -12 to 100 := 0 ;
 
-	signal s_acceleration				: integer := 0;
-	signal s_flap_velocity				: integer := -7;
+	signal s_acceleration				: integer range 0 to 3 := 0 ;
+	signal s_flap_velocity				: integer range -12 to 0 := -11;
 
 	signal s_previous_game_state		: state_type;
 
@@ -63,9 +63,9 @@ BEGIN
 	process (VGA_VS, bird_reset)
 		variable v_bird_x_pos 				: std_logic_vector(9 DOWNTO 0);
 		variable v_bird_y_pos 				: std_logic_vector(9 DOWNTO 0);
-		variable v_vel						: integer;
-		variable v_acceleration				: integer;
-		variable v_flap_velocity			: integer;
+		variable v_vel						: integer range -12 to 100;
+		variable v_acceleration				: integer range 0 to 3;
+		variable v_flap_velocity			: integer range -12 to 0;
 		variable v_left_button_one_shot 	: std_logic;
 		variable v_previous_left_button		: std_logic;
 	begin
@@ -105,10 +105,12 @@ BEGIN
 				s_previous_game_state <= game_state;
 
 				case game_state is
-					when start_menu | practice | easy =>
+					when start_menu =>
 						v_bird_y_pos := CONV_STD_LOGIC_VECTOR(230,10);
 						v_bird_x_pos := CONV_STD_LOGIC_VECTOR(100,10);
 						v_vel := 0;
+					when practice | easy =>
+						v_vel := -11;
 					when game_over =>
 						v_vel := 0;
 					when others =>

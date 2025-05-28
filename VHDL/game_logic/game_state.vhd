@@ -24,11 +24,13 @@ architecture behaviour of game_state is
 
 begin
 
-    process (clk)
+    process (clk, reset)
         variable v_current_state : state_type;
         variable v_next_state : state_type;
     begin
-        if (rising_edge(clk)) then
+        if (reset = '1') then
+            s_current_state <= start_menu;
+        elsif (rising_edge(clk)) then
             v_current_state := s_current_state;
 
             case v_current_state is
