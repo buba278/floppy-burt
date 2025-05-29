@@ -1,60 +1,164 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-USE work.fsm_states_pkg.all
+USE work.fsm_states_pkg.all;
 
 entity shield_renderer is
     port (
-        clk             : IN std_logic;
-        vga_vs          : IN std_logic;
-        reset           : IN std_logic;
-        game_state      : IN state_type;
-        lfsr_value      : IN std_logic_vector(9 downto 0);
-        current_row     : IN std_logic_vector(9 downto 0);
-        current_col     : IN std_logic_vector(9 downto 0);
-        pipe1_x_pos     : IN std_logic_vector(11 downto 0);
-        bird_visible    : IN std_logic;
-        score           : IN std_logic_vector(9 downto 0);        
-
-        shield_visible  : OUT std_logic;
-        shield_red      : OUT std_logic_vector(3 downto 0);
-        shield_green    : OUT std_logic_vector(3 downto 0);
-        shield_blue     : OUT std_logic_vector(3 downto 0)
+        clk, reset                              : IN std_logic;
+        game_state                              : IN state_type;
+        lfsr_value                              : IN std_logic_vector(9 downto 0);
+        current_row, current_col                : IN std_logic_vector(9 downto 0);
+        pipe1_x_pos, pipe2_x_pos, pipe3_x_pos   : IN integer;
+        bird_visible                            : IN std_logic;
+        score                                   : IN std_logic_vector(9 downto 0);        
+        shield_visible                          : OUT std_logic;
+        shield_red, shield_green, shield_blue   : OUT std_logic_vector(3 downto 0);
+        shield_ability_active                   : OUT std_logic
     );
 end entity shield_renderer;
 
 architecture behaviour of shield_renderer is
 
-    constant shield_size    : unsigned(9 downto 0) := to_unsigned(7, 10); -- size of the shield in pixels
+    constant c_shield_width     : integer range 0 to 30 := 30;      -- size of the shield in pixels
+    constant c_shield_height    : integer range 0 to 30 := 15;       -- size of the shield in pixels
+    constant c_screen_width     : integer range 0 to 1023 := 640;   -- VGA screen width
 
-    signal s_shield_on_bool : std_logic := '0';
-    signal s_shield_x_pos   : unsigned(9 downto 0);
-    signal s_shield_y_pos   : unsigned(9 downto 0);
+    signal s_shield_x_pos   : integer range -8 to 1023; -- right edge of shield
+    signal s_shield_y_pos   : integer range 0 to 500;
 
-    signal s_shield_on : std_logic_vector(3 downto 0);
-
+    signal s_previous_game_state : state_type := start_menu;
     signal s_game_start_bool : std_logic := '0';
+
+    signal s_previous_score : std_logic_vector(9 downto 0) := (others => '0');
+
+    signal s_waiting_for_shield : std_logic := '0';
+    signal s_shield_icon_active : std_logic := '0';
+    signal s_shield_ability_active : std_logic := '0';
+
+    signal s_most_right_pipe_x_pos : integer range 0 to 1023 := 0;
+
+    signal s_seed : unsigned(5 downto 0);
+
+    signal s_shield_velocity : integer range 0 to 4 := 0;
+
+    signal s_score_when_shield_ability : integer range 0 to 999 := 0;
+
+    -- shield visibility
+    signal s_shield_on          : std_logic_vector(3 downto 0);
+    signal s_shield_on_bool     : std_logic := '0';
 
 begin
 
-    s_shield_on_bool <= '1' when ((s_shield_x_pos - shield_size <= unsigned(current_col)) and (unsigned(current_col) <= s_shield_x_pos + shield_size) 	-- x_pos - s_size <= current_col <= x_pos + s_size
-						and (s_shield_y_pos - shield_size <= unsigned(current_row)) and (unsigned(current_row) <= s_shield_y_pos + shield_size))  else	-- y_pos - s_size <= current_row <= y_pos + s_size
-				'0';
+    s_shield_on_bool <= '1' when (((to_integer(unsigned(current_col)) >= (s_shield_x_pos - c_shield_width))
+                            and (to_integer(unsigned(current_col)) <= s_shield_x_pos)
+						    and (to_integer(unsigned(current_row)) >= s_shield_y_pos - c_shield_height) 
+                            and (to_integer(unsigned(current_row)) <= s_shield_y_pos + c_shield_height))) 
+                            and (s_shield_icon_active = '1')
+                            else '0';
     
-    shield_visible <= s_shield_on_bool; 
-
     s_game_start_bool <= '1' when (game_state = easy) or (game_state = medium) or (game_state = hard) else '0';
     
     s_shield_on <= (others => s_shield_on_bool);
 
-    shield_red <= not s_shield_on;
-    shield_green <= not s_shield_on;
-    shield_blue <= s_shield_on;
+    shield_red      <= not s_shield_on;
+    shield_green    <= not s_shield_on;
+    shield_blue     <= s_shield_on;
 
-    process(vga_vs, reset)
+    shield_visible <= s_shield_on_bool; 
+
+    shield_ability_active <= s_shield_ability_active;
+
+    -- shield velocity based on game state
+    with game_state select
+    s_shield_velocity <= 2 when easy, 
+                         3 when medium,
+                         4 when hard,
+                         0 when others;                     
+
+    -- process to find the most right pipe
+    process(pipe1_x_pos, pipe2_x_pos, pipe3_x_pos)
+        variable max_val : integer;
     begin
-        if (rising_edge(vga_vs)) then
+        max_val := pipe1_x_pos;
+        if pipe2_x_pos > max_val then
+            max_val := pipe2_x_pos;
+        end if;
+        if pipe3_x_pos > max_val then
+            max_val := pipe3_x_pos;
+        end if;
+        s_most_right_pipe_x_pos <= max_val;
+    end process;
 
+    process(clk, reset)
+    begin
+        if (reset = '1') then
+            s_shield_icon_active <= '0';
+            s_waiting_for_shield <= '0';
+            s_shield_ability_active <= '0';
+            s_previous_score <= (others => '0');
+            s_score_when_shield_ability <= 0;
+        elsif (rising_edge(clk)) then
+            if (game_state /= s_previous_game_state) then 
+
+                s_previous_game_state <= game_state;
+
+                if game_state = start_menu then
+
+                    s_shield_icon_active <= '0';
+                    s_waiting_for_shield <= '0';
+                    s_shield_ability_active <= '0';
+                    s_previous_score <= (others => '0');
+                    s_score_when_shield_ability <= 0;
+
+				end if;
+
+            elsif (s_game_start_bool = '1') then
+                
+                s_previous_score <= score;
+                -- Detect score milestone
+                -- if game_start_bool is 1, score greater than 0, score mod 10 is 0 and previous score mod 10 is not 0
+                if (s_game_start_bool = '1' and (unsigned(score) > 0) and (unsigned(score) mod 10 = 0) and (unsigned(s_previous_score) mod 10 /= 0)) then
+                    s_waiting_for_shield <= '1';
+                end if;
+
+                -- Monitor right most pipe position and wait until most right pipe is 50 away from the right edge of screen
+                if (s_waiting_for_shield = '1') then
+                    if (c_screen_width > (s_most_right_pipe_x_pos + 50)) then
+                        s_waiting_for_shield <= '0';
+                        s_shield_icon_active <= '1';
+                        s_shield_x_pos <= c_screen_width + c_shield_width; -- place shield to the right of the screen
+                        s_shield_y_pos <= 80 + (to_integer(unsigned(lfsr_value(5 downto 0))) * 5); -- place shield below the current row
+                    end if;
+                end if;
+
+                -- Movement and collision of shield
+                if (s_shield_icon_active = '1') then
+                    -- Move shield to the left
+                    s_shield_x_pos <= s_shield_x_pos - s_shield_velocity;
+
+                    -- Check if shield is out of screen
+                    if (s_shield_x_pos <= 0) then
+                        s_shield_icon_active <= '0'; -- deactivate shield when it goes out of screen
+                        s_waiting_for_shield <= '0'; -- reset waiting for shield
+                    end if;
+
+                    -- Check collision with bird
+                    if (s_shield_on_bool = '1' and bird_visible = '1') then
+                        -- Collision detected, deactivate shield
+                        s_shield_icon_active <= '0';
+                        s_shield_ability_active <= '1';
+                        s_score_when_shield_ability <= to_integer(unsigned(score));
+                    end if;
+
+                    -- Handling shield duration
+                    -- Check if score has changed by 2 pipes since shield ability was activated
+                    if ((to_integer(unsigned(score)) >= s_score_when_shield_ability + 2) or (game_state = game_over)) then
+                        s_shield_ability_active <= '0'; -- deactivate shield ability when score increases
+                    end if;
+                end if;
+                
+            end if;
         end if;
     end process;
     

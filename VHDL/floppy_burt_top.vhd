@@ -88,6 +88,7 @@ architecture test_game of floppy_burt_top is
         game_state                                      : IN state_type;
         score_out                                       : OUT std_logic_vector(9 downto 0);
         pipe1_visible, pipe2_visible, pipe3_visible     : OUT std_logic;
+        pipe1_x_pos, pipe2_x_pos, pipe3_x_pos           : OUT integer range 0 to 1023; -- right edge of the pipes
 		red1, green1, blue1                             : OUT std_logic_vector(3 downto 0);
         red2, green2, blue2                             : OUT std_logic_vector(3 downto 0);
         red3, green3, blue3                             : OUT std_logic_vector(3 downto 0)
@@ -113,6 +114,7 @@ architecture test_game of floppy_burt_top is
             bird_visible 	                                : IN std_logic;
             pipe1_visible, pipe2_visible, pipe3_visible     : IN std_logic;
             bird_x_pos, bird_y_pos                          : IN std_logic_vector(9 DOWNTO 0);
+            shield_ability_active                           : IN std_logic;
             bird_collision						            : OUT std_logic
         );
     end component collision;
@@ -157,6 +159,22 @@ architecture test_game of floppy_burt_top is
 	);		
     END component screen_renderer;
 
+    component shield_renderer is
+        port (
+            clk, reset                              : IN std_logic;
+            game_state                              : IN state_type;
+            lfsr_value                              : IN std_logic_vector(9 downto 0);
+            current_row, current_col                : IN std_logic_vector(9 downto 0);
+            pipe1_x_pos, pipe2_x_pos, pipe3_x_pos   : IN integer;
+            bird_visible                            : IN std_logic;
+            score                                   : IN std_logic_vector(9 downto 0);        
+    
+            shield_visible                          : OUT std_logic;
+            shield_red, shield_green, shield_blue   : OUT std_logic_vector(3 downto 0);
+            shield_ability_active                   : OUT std_logic
+        );
+    end component shield_renderer;
+
     -- ===== INTERMEDIATE SIGNALS =====
     -- pll
     signal clock_25Mhz, s_locked, s_rst : std_logic;
@@ -168,6 +186,7 @@ architecture test_game of floppy_burt_top is
 
     -- pipe renderer
     signal s_pipe1_visible, s_pipe2_visible, s_pipe3_visible : std_logic;
+    signal s_pipe1_x_pos, s_pipe2_x_pos, s_pipe3_x_pos : integer range 0 to 1023; -- right edge of the pipes
     signal s_pipe1_r, s_pipe1_g, s_pipe1_b : std_logic_vector(3 downto 0);
     signal s_pipe2_r, s_pipe2_g, s_pipe2_b : std_logic_vector(3 downto 0);
     signal s_pipe3_r, s_pipe3_g, s_pipe3_b : std_logic_vector(3 downto 0);
@@ -204,6 +223,11 @@ architecture test_game of floppy_burt_top is
 
     -- lfsr
     signal s_lfsr_out : std_logic_vector(9 downto 0);
+
+    -- shield
+    signal s_shield_visible : std_logic;
+    signal s_shield_r, s_shield_g, s_shield_b : std_logic_vector(3 downto 0);
+    signal s_shield_ability_active : std_logic;
     
 begin
 
@@ -268,7 +292,7 @@ begin
     
     b1: bird_renderer
         port map (
-            -- in
+            -- input
             left_button => s_left_button,
             right_button => s_right_button,
             VGA_VS => s_VGA_VS,
@@ -276,7 +300,7 @@ begin
             current_col => s_pix_col,
             bird_reset => s_bird_reset,
             game_state => s_game_state,
-            -- out
+            -- output
             bird_visible => s_bird_visible,
             red => s_bird_r,
             green => s_bird_g,
@@ -299,6 +323,9 @@ begin
             pipe1_visible => s_pipe1_visible,
             pipe2_visible => s_pipe2_visible,
             pipe3_visible => s_pipe3_visible,
+            pipe1_x_pos => s_pipe1_x_pos,
+            pipe2_x_pos => s_pipe2_x_pos,
+            pipe3_x_pos => s_pipe3_x_pos,
             red1 => s_pipe1_r,
             green1 => s_pipe1_g,
             blue1 => s_pipe1_b,
@@ -312,12 +339,12 @@ begin
         
     d1: display_7seg
     port map (
-        -- in
+        -- input
         clk => clock_25Mhz,
         reset => s_bird_reset,
         game_state => s_game_state,
         score_input => s_score_out,
-        -- out
+        -- output
         seven_seg_out_0 => HEX0,
         seven_seg_out_1 => HEX1,
         seven_seg_out_2 => HEX2,
@@ -334,6 +361,7 @@ begin
         pipe3_visible => s_pipe3_visible,
         bird_x_pos => s_bird_x_pos,
         bird_y_pos => s_bird_y_pos,
+        shield_ability_active => s_shield_ability_active,
         bird_collision => s_bird_collision
     );
 
@@ -359,7 +387,7 @@ begin
 
     bg1: bg_renderer
     port map (
-        -- in
+        -- input
         vsync => s_VGA_VS,
         clock => clock_25Mhz,
         current_row => s_pix_row,
@@ -372,7 +400,7 @@ begin
 
     sc1: screen_renderer
     port map (
-        -- in
+        -- input
         game_state => s_game_state,
         clock => clock_25Mhz,
         current_row => s_pix_row,
@@ -383,12 +411,35 @@ begin
         blue => s_screen_b
     );
 
+    sh1: shield_renderer
+    port map (
+        -- input
+        clk => s_VGA_VS,
+        reset => s_rst,
+        game_state => s_game_state,
+        lfsr_value => s_lfsr_out,
+        current_row => s_pix_row,
+        current_col => s_pix_col,
+        pipe1_x_pos => s_pipe1_x_pos,
+        pipe2_x_pos => s_pipe2_x_pos,
+        pipe3_x_pos => s_pipe3_x_pos,
+        bird_visible => s_bird_visible,
+        score => s_score_out,        
+        -- output
+        shield_visible => s_shield_visible,
+        shield_red => s_shield_r,
+        shield_green => s_shield_g,
+        shield_blue => s_shield_b,
+        shield_ability_active => s_shield_ability_active
+    );
+
     -- ======= RENDERER =======
 
     process(s_bird_r,s_bird_g,s_bird_b,s_bird_visible,s_text_r,s_text_g,s_text_b,s_text_visible, 
             s_pipe1_r,s_pipe1_g,s_pipe1_b,s_pipe1_visible, s_pipe2_r,s_pipe2_g,s_pipe2_b,s_pipe2_visible,
             s_pipe3_r,s_pipe3_g,s_pipe3_b,s_pipe3_visible,
-            s_screen_r,s_screen_g,s_screen_b,s_game_state)
+            s_screen_r,s_screen_g,s_screen_b,s_game_state,
+            s_shield_visible, s_shield_r, s_shield_g, s_shield_b)
     begin
         -- Layers
         -- background
@@ -423,6 +474,13 @@ begin
             s_final_r <= s_bird_r;
             s_final_g <= s_bird_g;
             s_final_b <= s_bird_b;
+        end if;
+
+        -- shield
+        if (s_shield_visible = '1') then
+            s_final_r <= s_shield_r;
+            s_final_g <= s_shield_g;
+            s_final_b <= s_shield_b;
         end if;
 
         -- text

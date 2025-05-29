@@ -29,10 +29,10 @@ architecture behaviour of bird_renderer is
 	signal s_bird_x_pos					: std_logic_vector(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(100,10);
 
 	signal s_reset_vel					: std_logic := '0';
-	signal s_vel						: integer range -12 to 100 := 0;
+	signal s_vel						: integer range -7 to 100 := 0;
 
 	signal s_acceleration				: integer range 0 to 3 := 0;
-	signal s_flap_velocity				: integer range -12 to 0 := -7;
+	signal s_flap_velocity				: integer range -7 to 0 := -7;
 
 	signal s_previous_game_state		: state_type;
 
@@ -62,12 +62,12 @@ BEGIN
 	bird_x_pos <= s_bird_x_pos;
 	bird_y_pos <= s_bird_y_pos;
 
-	process (VGA_VS, bird_reset)
+	process (VGA_VS, bird_reset, left_button, game_state)
 		variable v_bird_x_pos 				: std_logic_vector(9 DOWNTO 0);
 		variable v_bird_y_pos 				: std_logic_vector(9 DOWNTO 0);
-		variable v_vel						: integer range -12 to 100 := 0;
+		variable v_vel						: integer range -7 to 100 := 0;
 		variable v_acceleration				: integer range 0 to 3;
-		variable v_flap_velocity			: integer range -12 to 0;
+		variable v_flap_velocity			: integer range -7 to 0;
 		variable v_left_button_one_shot 	: std_logic;
 		variable v_previous_left_button		: std_logic;
 	begin
@@ -122,6 +122,7 @@ BEGIN
 			else 
 				if (v_left_button_one_shot ='1' and game_state /= game_over and game_state /= start_menu) then
 					v_vel := v_flap_velocity;
+					v_left_button_one_shot := '0';
 				else
 					if (s_vga_counter < 1) then
 						s_vga_counter <= s_vga_counter + 1;
