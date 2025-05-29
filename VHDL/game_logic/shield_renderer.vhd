@@ -15,7 +15,7 @@ entity shield_renderer is
         score                                   : IN std_logic_vector(9 downto 0);        
         shield_visible                          : OUT std_logic;
         shield_red, shield_green, shield_blue   : OUT std_logic_vector(3 downto 0);
-        shield_ability_active                   : OUT std_logic
+        new_score                               : OUT integer range 0 to 999
     );
 end entity shield_renderer;
 
@@ -43,7 +43,7 @@ architecture behaviour of shield_renderer is
 
     signal s_shield_velocity : integer range 0 to 4 := 0;
 
-    signal s_score_when_shield_ability : integer range 0 to 999 := 0;
+    signal s_new_score : integer range 0 to 999 := 0;
 
     signal s_shield_collision   : std_logic := '0';
 
@@ -70,7 +70,7 @@ begin
 
     shield_visible <= s_shield_on_bool; 
 
-    shield_ability_active <= s_shield_collision;
+    new_score <= s_new_score;
 
     -- shield velocity based on game state
     with game_state select
@@ -110,7 +110,7 @@ begin
             s_shield_icon_active <= '0';
             s_shield_ability_active <= '0';
             s_previous_score <= (others => '0');
-            s_score_when_shield_ability <= 0;
+            s_new_score <= 0;
             s_shield_placed <= '0';
         elsif (rising_edge(vga_vs)) then
             if (game_state /= s_previous_game_state) then 
@@ -122,7 +122,7 @@ begin
                     s_shield_icon_active <= '0';
                     s_shield_ability_active <= '0';
                     s_previous_score <= (others => '0');
-                    s_score_when_shield_ability <= 0;
+                    s_new_score <= 0;
                     s_shield_placed <= '0';
 
 				end if;
@@ -133,7 +133,7 @@ begin
 
                 -- Detect score milestone
                 -- if game_start_bool is 1, score greater than 0, score mod 10 is 0 and previous score mod 10 is not 0
-                if ((unsigned(score) > 0) and (unsigned(score) mod 7 = 0) and (unsigned(s_previous_score) mod 7 /= 0)) then
+                if ((unsigned(score) > 0) and (unsigned(score) mod 7 = 0) and (unsigned(s_previous_score) mod 7 /= 0) and s_shield_icon_active = '0') then
                     s_shield_icon_active <= '1';
                 end if;
 
@@ -141,7 +141,7 @@ begin
                 if (s_shield_icon_active = '1') then
 
                     if (s_shield_placed = '0') then
-                        s_shield_x_pos <= s_most_right_pipe_x_pos + 50; -- place shield 50 pixels to the right of the most right pipe
+                        s_shield_x_pos <= s_most_right_pipe_x_pos + 107; -- place shield 50 pixels to the right of the most right pipe
                         s_shield_y_pos <= 80 + (to_integer(unsigned(lfsr_value(5 downto 0))) * 5); -- place shield below the current row
                         s_shield_placed <= '1'; 
                     elsif (s_shield_placed = '1') then
@@ -153,19 +153,18 @@ begin
                     if (s_shield_x_pos <= 0) then
                         s_shield_icon_active <= '0';
                         s_shield_placed <= '0';
+                        s_shield_x_pos <= 680;
+                        s_shield_y_pos <= 240;
                     end if;
 
                     -- Check collision with bird
                     if (s_shield_collision = '1') then
                         s_shield_icon_active <= '0';
                         s_shield_ability_active <= '1';
-                        s_score_when_shield_ability <= to_integer(unsigned(score));
-                    end if;
-
-                    -- Handling shield duration
-                    -- Check if score has changed by 2 pipes since shield ability was activated
-                    if ((to_integer(unsigned(score)) >= s_score_when_shield_ability + 2) or (game_state = game_over)) then
-                        s_shield_ability_active <= '0'; -- deactivate shield ability when score increases
+                        s_shield_placed <= '0';
+                        s_shield_x_pos <= 680;
+                        s_shield_y_pos <= 240;
+                        s_new_score <= to_integer(unsigned(score)) + 5;
                     end if;
                 end if;
                 

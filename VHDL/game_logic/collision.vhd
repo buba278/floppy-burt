@@ -9,7 +9,6 @@ ENTITY collision IS
         bird_visible 	                                : IN std_logic;
         pipe1_visible, pipe2_visible, pipe3_visible     : IN std_logic;
         bird_x_pos, bird_y_pos                          : IN std_logic_vector(9 DOWNTO 0);
-        shield_ability_active                           : IN std_logic;
         bird_collision						            : OUT std_logic
     );		
 END ENTITY collision;
@@ -25,7 +24,7 @@ BEGIN
     -- collosion detected when bird is visible and any pipe is visible at same time or when bird hits top or bottom of screen
     -- change when not a square
 
-    bird_collision <= '1' when (s_pipe_visible = '1' and bird_visible = '1' and shield_ability_active = '0') or
+    bird_collision <= '1' when (s_pipe_visible = '1' and bird_visible = '1') or
                           (bird_y_pos <= CONV_STD_LOGIC_VECTOR(10,10)) or
                           (bird_y_pos >= CONV_STD_LOGIC_VECTOR(470,10)) else
                           '0';

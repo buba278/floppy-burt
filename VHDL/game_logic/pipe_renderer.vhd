@@ -9,6 +9,7 @@ entity pipe_renderer is
         current_row, current_col                        : IN std_logic_vector(9 downto 0);
         lfsr_value                                      : IN std_logic_vector(9 downto 0);
         game_state                                      : IN state_type;
+        new_score                                       : IN integer range 0 to 999; -- new score from the game state
         score_out                                       : OUT std_logic_vector(9 downto 0);
         pipe1_visible, pipe2_visible, pipe3_visible     : OUT std_logic;
         pipe1_x_pos, pipe2_x_pos, pipe3_x_pos           : OUT integer range 0 to 1023; -- right edge of the pipes
@@ -239,6 +240,9 @@ begin
                 end if;
 
                 -- score counting
+                if (new_score > to_integer(unsigned(score))) then
+                    score <= std_logic_vector(to_unsigned(new_score, 10));
+                end if;
                 if ((s_pipe1_x_pos <= c_bird_x_pos) and (s_pipe1_x_pos >= (c_bird_x_pos - (pipe_velocity - 1)))) or
                     ((s_pipe2_x_pos <= c_bird_x_pos) and (s_pipe2_x_pos >= (c_bird_x_pos - (pipe_velocity - 1)))) or
                     ((s_pipe3_x_pos <= c_bird_x_pos) and (s_pipe3_x_pos >= (c_bird_x_pos - (pipe_velocity - 1)))) then

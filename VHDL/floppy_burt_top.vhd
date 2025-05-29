@@ -86,6 +86,7 @@ architecture test_game of floppy_burt_top is
         current_row, current_col                        : IN std_logic_vector(9 downto 0);
         lfsr_value                                      : IN std_logic_vector(9 downto 0);
         game_state                                      : IN state_type;
+        new_score                                       : IN integer range 0 to 999; -- new score from shield renderer
         score_out                                       : OUT std_logic_vector(9 downto 0);
         pipe1_visible, pipe2_visible, pipe3_visible     : OUT std_logic;
         pipe1_x_pos, pipe2_x_pos, pipe3_x_pos           : OUT integer range 0 to 1023; -- right edge of the pipes
@@ -114,7 +115,6 @@ architecture test_game of floppy_burt_top is
             bird_visible 	                                : IN std_logic;
             pipe1_visible, pipe2_visible, pipe3_visible     : IN std_logic;
             bird_x_pos, bird_y_pos                          : IN std_logic_vector(9 DOWNTO 0);
-            shield_ability_active                           : IN std_logic;
             bird_collision						            : OUT std_logic
         );
     end component collision;
@@ -172,7 +172,7 @@ architecture test_game of floppy_burt_top is
     
             shield_visible                          : OUT std_logic;
             shield_red, shield_green, shield_blue   : OUT std_logic_vector(3 downto 0);
-            shield_ability_active                   : OUT std_logic
+            new_score                               : OUT integer range 0 to 999
         );
     end component shield_renderer;
 
@@ -228,7 +228,7 @@ architecture test_game of floppy_burt_top is
     -- shield
     signal s_shield_visible : std_logic;
     signal s_shield_r, s_shield_g, s_shield_b : std_logic_vector(3 downto 0);
-    signal s_shield_ability_active : std_logic;
+    signal s_new_score : integer range 0 to 999;
     
 begin
 
@@ -319,6 +319,7 @@ begin
             current_col => s_pix_col,
             lfsr_value => s_lfsr_out,
             game_state => s_game_state,
+            new_score => s_new_score,
             -- output
             score_out => s_score_out,
             pipe1_visible => s_pipe1_visible,
@@ -362,7 +363,6 @@ begin
         pipe3_visible => s_pipe3_visible,
         bird_x_pos => s_bird_x_pos,
         bird_y_pos => s_bird_y_pos,
-        shield_ability_active => s_shield_ability_active,
         bird_collision => s_bird_collision
     );
 
@@ -432,7 +432,7 @@ begin
         shield_red => s_shield_r,
         shield_green => s_shield_g,
         shield_blue => s_shield_b,
-        shield_ability_active => s_shield_ability_active
+        new_score => s_new_score
     );
 
     -- ======= RENDERER =======
@@ -531,7 +531,6 @@ begin
 
     -- mouse indicators
     LEDR(1) <= s_left_button;
-    LEDR(0) <= s_shield_ability_active;
 
     LEDR(4) <= s_bird_reset;
 
