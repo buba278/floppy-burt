@@ -86,7 +86,7 @@ architecture test_game of floppy_burt_top is
         current_row, current_col                        : IN std_logic_vector(9 downto 0);
         lfsr_value                                      : IN std_logic_vector(9 downto 0);
         game_state                                      : IN state_type;
-        new_score                                       : IN integer range 0 to 999; -- new score from shield renderer
+        new_score                                       : IN integer range 0 to 999;
         score_out                                       : OUT std_logic_vector(9 downto 0);
         pipe1_visible, pipe2_visible, pipe3_visible     : OUT std_logic;
         pipe1_x_pos, pipe2_x_pos, pipe3_x_pos           : OUT integer range 0 to 1023; -- right edge of the pipes
@@ -159,7 +159,7 @@ architecture test_game of floppy_burt_top is
 	);		
     END component screen_renderer;
 
-    component shield_renderer is
+    component gift_renderer is
         port (
             clk, reset                              : IN std_logic;
             vga_vs                                  : IN std_logic;
@@ -169,12 +169,11 @@ architecture test_game of floppy_burt_top is
             pipe1_x_pos, pipe2_x_pos, pipe3_x_pos   : IN integer;
             bird_visible                            : IN std_logic;
             score                                   : IN std_logic_vector(9 downto 0);        
-    
-            shield_visible                          : OUT std_logic;
-            shield_red, shield_green, shield_blue   : OUT std_logic_vector(3 downto 0);
+            gift_visible                            : OUT std_logic;
+            gift_red, gift_green, gift_blue         : OUT std_logic_vector(3 downto 0);
             new_score                               : OUT integer range 0 to 999
         );
-    end component shield_renderer;
+    end component gift_renderer;
 
     -- ===== INTERMEDIATE SIGNALS =====
     -- pll
@@ -225,9 +224,9 @@ architecture test_game of floppy_burt_top is
     -- lfsr
     signal s_lfsr_out : std_logic_vector(9 downto 0);
 
-    -- shield
-    signal s_shield_visible : std_logic;
-    signal s_shield_r, s_shield_g, s_shield_b : std_logic_vector(3 downto 0);
+    -- gift
+    signal s_gift_visible : std_logic;
+    signal s_gift_r, s_gift_g, s_gift_b : std_logic_vector(3 downto 0);
     signal s_new_score : integer range 0 to 999;
     
 begin
@@ -412,7 +411,7 @@ begin
         blue => s_screen_b
     );
 
-    sh1: shield_renderer
+    gr1: gift_renderer
     port map (
         -- input
         clk => clock_25Mhz,
@@ -428,10 +427,10 @@ begin
         bird_visible => s_bird_visible,
         score => s_score_out,        
         -- output
-        shield_visible => s_shield_visible,
-        shield_red => s_shield_r,
-        shield_green => s_shield_g,
-        shield_blue => s_shield_b,
+        gift_visible => s_gift_visible,
+        gift_red => s_gift_r,
+        gift_green => s_gift_g,
+        gift_blue => s_gift_b,
         new_score => s_new_score
     );
 
@@ -443,7 +442,7 @@ begin
             s_pipe2_r,s_pipe2_g,s_pipe2_b,s_pipe2_visible,
             s_pipe3_r,s_pipe3_g,s_pipe3_b,s_pipe3_visible,
             s_screen_r,s_screen_g,s_screen_b,s_game_state,
-            s_shield_visible, s_shield_r, s_shield_g, s_shield_b)
+            s_gift_visible, s_gift_r, s_gift_g, s_gift_b)
     begin
         -- Layers
         -- background
@@ -480,11 +479,11 @@ begin
             s_final_b <= s_bird_b;
         end if;
 
-        -- shield
-        if (s_shield_visible = '1') then
-            s_final_r <= s_shield_r;
-            s_final_g <= s_shield_g;
-            s_final_b <= s_shield_b;
+        -- gift
+        if (s_gift_visible = '1') then
+            s_final_r <= s_gift_r;
+            s_final_g <= s_gift_g;
+            s_final_b <= s_gift_b;
         end if;
 
         -- text
@@ -506,15 +505,6 @@ begin
     -- Final Assignment (no rgb as done by vga sync)
     VGA_VS <= s_VGA_VS;
     VGA_HS <= s_VGA_HS;
-
-    -- text config
-    --s_char_count <= 7 when KEY(0) = '1' else 5;
-    --s_char <= char_scorehash when KEY(0) = '1' else -- 'SCORE #'
-    --          char_hello; -- 'hello'
-    --s_text_scale <= 1 when KEY(0) = '1' else 2;
-
-    --s_text_origin_col <= "0000010100"; -- Column 20
-    --s_text_origin_row <= "0000010100"; -- Row 20
 
     -- LEDR to represent game state
     with s_game_state select
