@@ -59,7 +59,7 @@ begin
 
                 when easy =>
                     -- if score is equal to 20 go to medium mode
-                    if score = CONV_STD_LOGIC_VECTOR(2,10) then
+                    if score = CONV_STD_LOGIC_VECTOR(1,10) then
                         v_next_state := medium;
                     elsif bird_collision = '1' then
                         v_next_state := game_over;
@@ -69,7 +69,7 @@ begin
 
                 when medium =>
                     -- if score is equal to 40 go to hard mode
-                    if score = CONV_STD_LOGIC_VECTOR(4,10) then
+                    if score = CONV_STD_LOGIC_VECTOR(2,10) then -- NUMBER NEEDS TO BE HARD MODE - 2 (so pipes can start moving earlier)
                         v_next_state := hard;
                     elsif bird_collision = '1' then
                         v_next_state := game_over;
