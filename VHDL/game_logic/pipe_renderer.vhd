@@ -6,6 +6,7 @@ use work.fsm_states_pkg.all;
 entity pipe_renderer is
     port(
         clk, reset                                      : IN std_logic;
+        vga_vs                                          : IN std_logic; 
         current_row, current_col                        : IN std_logic_vector(9 downto 0);
         lfsr_value                                      : IN std_logic_vector(9 downto 0);
         game_state                                      : IN state_type;
@@ -22,6 +23,7 @@ end entity pipe_renderer;
 architecture behaviour of pipe_renderer is
 
     constant c_pipe_width         : integer range 0 to 64     := 50;    -- diameter of pipe
+    constant c_pipe_spacing       : integer range 0 to 512   := 250;    -- distance between pipes
     constant c_screen_width       : integer range 0 to 1023   := 640;   -- VGA screen width
     constant c_bird_x_pos         : integer range 0 to 127    := 100;   -- x position of the bird
 
@@ -30,9 +32,9 @@ architecture behaviour of pipe_renderer is
     signal score                : std_logic_vector(9 downto 0) := (others => '0');
 
     -- tracks the right edge of the pipes
-    signal s_pipe1_x_pos        : integer := 690 + c_pipe_width;    -- pipes start off screen
-    signal s_pipe2_x_pos        : integer := 904 + c_pipe_width;
-    signal s_pipe3_x_pos        : integer := 1117 + c_pipe_width;
+    signal s_pipe1_x_pos        : integer := c_screen_width + c_pipe_width;    -- pipes start off screen
+    signal s_pipe2_x_pos        : integer := c_screen_width + c_pipe_spacing + c_pipe_width;
+    signal s_pipe3_x_pos        : integer := c_screen_width + 2 * c_pipe_spacing + c_pipe_width;
     signal pipe_velocity        : integer range 0 to 8  := 0;
     
     -- for the gaps in the pipes
@@ -99,14 +101,14 @@ begin
                      0 when others; 
 
     -- moving pipes across the screen
-    process(clk, reset, lfsr_value)
+    process(vga_vs, reset, lfsr_value)
 
     begin
         -- functionality for resetting the pipes in practice mode
         if (reset = '1') then
-                s_pipe1_x_pos <= 690 + c_pipe_width;
-                s_pipe2_x_pos <= 904 + c_pipe_width;
-                s_pipe3_x_pos <= 1117 + c_pipe_width;
+                s_pipe1_x_pos <= c_screen_width + c_pipe_width;
+                s_pipe2_x_pos <= c_screen_width + c_pipe_spacing + c_pipe_width;
+                s_pipe3_x_pos <= c_screen_width + 2 * c_pipe_spacing + c_pipe_width;
 
                 gap1_seed <= unsigned(lfsr_value(9 downto 4));
                 gap2_seed <= unsigned(lfsr_value(7 downto 2));
@@ -114,16 +116,16 @@ begin
 
                 score <= (others => '0');
 
-        elsif (rising_edge(clk)) then
+        elsif (rising_edge(vga_vs)) then
             if (game_state /= previous_game_state) then 
 
                 previous_game_state <= game_state;
 
                 case game_state is
 					when start_menu | practice | easy =>
-                        s_pipe1_x_pos <= 690 + c_pipe_width;
-                        s_pipe2_x_pos <= 904 + c_pipe_width;
-                        s_pipe3_x_pos <= 1117 + c_pipe_width;
+                        s_pipe1_x_pos <= c_screen_width + c_pipe_width;
+                        s_pipe2_x_pos <= c_screen_width + c_pipe_spacing + c_pipe_width;
+                        s_pipe3_x_pos <= c_screen_width + 2 * c_pipe_spacing + c_pipe_width;
         
                         gap1_seed <= unsigned(lfsr_value(9 downto 4));
                         gap2_seed <= unsigned(lfsr_value(7 downto 2));
@@ -148,7 +150,7 @@ begin
 
                 -- reset pipe 1 position when it reaches the left side of the screen
                 if (s_pipe1_x_pos) <= (pipe_velocity - 1) then
-                    s_pipe1_x_pos <= c_screen_width + c_pipe_width;
+                    s_pipe1_x_pos <= 3 * (c_pipe_spacing);
                     gap1_seed <= unsigned(lfsr_value(9 downto 4));
 
                     -- if in hard mode, pipe 1 has a chance of moving vertically
@@ -179,7 +181,7 @@ begin
                 
                 -- reset pipe 2 position when it reaches the left side of the screen
                 if (s_pipe2_x_pos) <= (pipe_velocity - 1) then
-                    s_pipe2_x_pos <= c_screen_width + c_pipe_width;
+                    s_pipe2_x_pos <= 3 * (c_pipe_spacing);
                     gap2_seed <= unsigned(lfsr_value(9 downto 4));
 
                     -- if in hard mode, pipe 2 has a chance of moving vertically
@@ -210,7 +212,7 @@ begin
 
                 -- reset pipe 3 position when it reaches the left side of the screen
                 if (s_pipe3_x_pos) <= (pipe_velocity - 1) then
-                    s_pipe3_x_pos <= c_screen_width + c_pipe_width;
+                    s_pipe3_x_pos <= 3 * (c_pipe_spacing);
                     gap3_seed <= unsigned(lfsr_value(9 downto 4));
 
                     -- if in hard mode, pipe 1 has a chance of moving vertically
@@ -243,6 +245,7 @@ begin
                 if (new_score > to_integer(unsigned(score))) then
                     score <= std_logic_vector(to_unsigned(new_score, 10));
                 end if;
+
                 if ((s_pipe1_x_pos <= c_bird_x_pos) and (s_pipe1_x_pos >= (c_bird_x_pos - (pipe_velocity - 1)))) or
                     ((s_pipe2_x_pos <= c_bird_x_pos) and (s_pipe2_x_pos >= (c_bird_x_pos - (pipe_velocity - 1)))) or
                     ((s_pipe3_x_pos <= c_bird_x_pos) and (s_pipe3_x_pos >= (c_bird_x_pos - (pipe_velocity - 1)))) then

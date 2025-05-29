@@ -83,6 +83,7 @@ architecture test_game of floppy_burt_top is
     component pipe_renderer is
     port(
         clk, reset                                      : IN std_logic;
+        vga_vs                                          : IN std_logic;
         current_row, current_col                        : IN std_logic_vector(9 downto 0);
         lfsr_value                                      : IN std_logic_vector(9 downto 0);
         game_state                                      : IN state_type;
@@ -312,8 +313,9 @@ begin
     p1: pipe_renderer
         port map (
             -- input
-            clk => s_VGA_VS,
+            clk => clock_25Mhz,
             reset => s_bird_reset,
+            vga_vs => s_VGA_VS,
             current_row => s_pix_row,
             current_col => s_pix_col,
             lfsr_value => s_lfsr_out,
