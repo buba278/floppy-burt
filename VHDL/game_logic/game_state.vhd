@@ -24,11 +24,11 @@ architecture behaviour of game_state is
 
 begin
 
-    process (clk, reset)
+    process (clk, reset, keys, mode_switch, left_button, bird_collision, score)
         variable v_current_state : state_type;
         variable v_next_state : state_type;
     begin
-        if (reset = '1') then
+        if (reset = '1' or (keys(0)= '0' and s_current_state = game_over)) then
             s_current_state <= start_menu;
         elsif (rising_edge(clk)) then
             v_current_state := s_current_state;
@@ -45,7 +45,7 @@ begin
                     end if;
 
                 when practice =>
-                    if keys(0) = '0' or reset = '1' then
+                    if keys(0) = '0' then
                         v_next_state := start_menu;
                     elsif bird_collision = '1' then
                         bird_reset <= '1';
@@ -85,7 +85,7 @@ begin
                     end if;
 
                 when game_over =>
-                    if keys(0) = '0' or reset = '1' then
+                    if keys(0) = '0' then
                         v_next_state := start_menu;
                     else
                         v_next_state := game_over;
