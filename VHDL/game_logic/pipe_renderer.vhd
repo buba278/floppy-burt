@@ -35,6 +35,7 @@ architecture behaviour of pipe_renderer is
     
     signal s_gap1_seed, s_gap2_seed, s_gap3_seed                          : unsigned(5 downto 0);
     signal s_gap1_y_pos, s_gap2_y_pos, s_gap3_y_pos                       : integer range 0 to 480 := 0;
+    signal s_gap1_y_pos_calc, s_gap2_y_pos_calc, s_gap3_y_pos_calc        : integer;
     signal s_moving_gap1_bool, s_moving_gap2_bool, s_moving_gap3_bool     : boolean := false;
     signal s_gap1_displacement, s_gap2_displacement, s_gap3_displacement  : integer range -320 to 320 := 0;
     signal s_gap1_velocity, s_gap2_velocity, s_gap3_velocity              : integer range -4 to 4 := 0;
@@ -48,9 +49,23 @@ begin
     -- game started when game_state is in practice, easy, medium or hard
     s_game_start_bool <= '1' when (game_state = practice) or (game_state = easy) or (game_state = medium) or (game_state = hard) else '0';
 
-    s_gap1_y_pos <= 80 + (to_integer(s_gap1_seed) * 5) + s_gap1_displacement;
-    s_gap2_y_pos <= 80 + (to_integer(s_gap2_seed) * 5) + s_gap2_displacement;
-    s_gap3_y_pos <= 80 + (to_integer(s_gap3_seed) * 5) + s_gap3_displacement;
+    -- Calculate desired gap positions without range constraint first
+    s_gap1_y_pos_calc <= 80 + (to_integer(s_gap1_seed) * 5) + s_gap1_displacement;
+    s_gap2_y_pos_calc <= 80 + (to_integer(s_gap2_seed) * 5) + s_gap2_displacement;
+    s_gap3_y_pos_calc <= 80 + (to_integer(s_gap3_seed) * 5) + s_gap3_displacement;
+
+    -- Clamp the calculated values before assigning to the ranged signals
+    s_gap1_y_pos <= 0 when s_gap1_y_pos_calc < 0 else
+                    480 when s_gap1_y_pos_calc > 480 else
+                    s_gap1_y_pos_calc;
+
+    s_gap2_y_pos <= 0 when s_gap2_y_pos_calc < 0 else
+                    480 when s_gap2_y_pos_calc > 480 else
+                    s_gap2_y_pos_calc;
+
+    s_gap3_y_pos <= 0 when s_gap3_y_pos_calc < 0 else
+                    480 when s_gap3_y_pos_calc > 480 else
+                    s_gap3_y_pos_calc;
 
     s_pipe1_on_bool <= '1' when (to_integer(unsigned(current_col)) >= (s_pipe1_x_pos - pipe_width)) and (to_integer(unsigned(current_col)) <= s_pipe1_x_pos)
                             and ((to_integer(unsigned(current_row)) <= (s_gap1_y_pos - s_gap_height)) or (to_integer(unsigned(current_row)) >= (s_gap1_y_pos + s_gap_height)))
@@ -68,9 +83,24 @@ begin
     s_pipe2_on <= (others => s_pipe2_on_bool);
     s_pipe3_on <= (others => s_pipe3_on_bool);
 
-    red1 <= not s_pipe1_on; green1 <= s_pipe1_on; blue1 <= not s_pipe1_on;
-    red2 <= not s_pipe2_on; green2 <= s_pipe2_on; blue2 <= not s_pipe2_on;
-    red3 <= not s_pipe3_on; green3 <= s_pipe3_on; blue3 <= not s_pipe3_on;
+    -- red1 <= s_pipe1_on; green1 <= s_pipe1_on; blue1 <= s_pipe1_on;
+    -- red2 <= s_pipe2_on; green2 <= s_pipe2_on; blue2 <= s_pipe2_on;
+    -- red3 <= s_pipe3_on; green3 <= s_pipe3_on; blue3 <= s_pipe3_on;
+
+    -- pipe 1 color
+    red1   <= "0100" when s_pipe1_on_bool = '1' else (others => '0');
+    green1 <= "1100" when s_pipe1_on_bool = '1' else (others => '0');
+    blue1  <= "1111" when s_pipe1_on_bool = '1' else (others => '0');
+
+    -- pipe 2 color
+    red2   <= "0100" when s_pipe2_on_bool = '1' else (others => '0');
+    green2 <= "1100" when s_pipe2_on_bool = '1' else (others => '0');
+    blue2  <= "1111" when s_pipe2_on_bool = '1' else (others => '0');
+
+    -- pipe 3 color
+    red3   <= "0100" when s_pipe3_on_bool = '1' else (others => '0');
+    green3 <= "1100" when s_pipe3_on_bool = '1' else (others => '0');
+    blue3  <= "1111" when s_pipe3_on_bool = '1' else (others => '0');
 
     pipe1_visible <= s_pipe1_on_bool;
     pipe2_visible <= s_pipe2_on_bool;
