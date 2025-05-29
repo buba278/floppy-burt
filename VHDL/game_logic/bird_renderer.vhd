@@ -24,6 +24,7 @@ architecture behaviour of bird_renderer is
 
 	signal s_previous_game_state		: state_type;
 	signal s_previous_left_button		: std_logic; -- := '0';
+	signal s_left_button_one_shot		: std_logic;
 
 	-- clock "divisor"
 	signal s_vga_counter 				: integer range 0 to 3; -- := 0;
@@ -64,7 +65,6 @@ BEGIN
         );
 
 	-- set point for x
-	s_bird_x_pos <= std_logic_vector(to_unsigned(100,10));
 	-- ports for collision
 	bird_x_pos <= s_bird_x_pos;
 	bird_y_pos <= s_bird_y_pos;
@@ -76,22 +76,22 @@ BEGIN
 
 	-- sprite matching => matching multiplication to otter sprite
 	-- just think about it sorry
-	s_otter_rom_col <= std_logic_vector(to_unsigned(to_integer(unsigned(s_otter_pos_col)) * (2 - (s_otter_sprite mod 2)), s_otter_rom_col'length));
-	s_otter_rom_row <= std_logic_vector(to_unsigned(to_integer(unsigned(s_otter_pos_row)) * (1 + (s_otter_sprite / 3)), s_otter_rom_row'length));
+	s_otter_rom_col <= std_logic_vector(to_unsigned((to_integer(unsigned(s_otter_pos_col)) / 2) + (32 * (1 - (s_otter_sprite mod 2))), s_otter_rom_col'length));
+	s_otter_rom_row <= std_logic_vector(to_unsigned((to_integer(unsigned(s_otter_pos_row)) / 2) + (32 * (s_otter_sprite / 3)), s_otter_rom_row'length));
 
 	-- otter positioning
 	-- x positioning - 100 +- 16
 	-- y positioning - y pos +- 16
 	s_otter_within_bounds <= '1' when
-    (to_integer(unsigned(current_col)) >= 84 and 
-     to_integer(unsigned(current_col)) < 116 and
-     to_integer(unsigned(current_row)) >= (to_integer(unsigned(s_bird_y_pos)) - 16) and 
-     to_integer(unsigned(current_row)) < (to_integer(unsigned(s_bird_y_pos)) + 16))
+    (to_integer(unsigned(current_col)) >= 68 and 
+     to_integer(unsigned(current_col)) < 132 and
+     to_integer(unsigned(current_row)) >= (to_integer(unsigned(s_bird_y_pos)) - 32) and 
+     to_integer(unsigned(current_row)) < (to_integer(unsigned(s_bird_y_pos)) + 32))
     else '0';
 
-	s_otter_pos_col <= std_logic_vector(to_unsigned(to_integer(unsigned(current_col)) - (to_integer(unsigned(s_bird_x_pos)) - 16), s_otter_pos_col'length))
+	s_otter_pos_col <= std_logic_vector(to_unsigned(to_integer(unsigned(current_col)) - (to_integer(unsigned(s_bird_x_pos)) - 32), s_otter_pos_col'length))
 					when s_otter_within_bounds = '1' else (others => '0');
-	s_otter_pos_row <= std_logic_vector(to_unsigned(to_integer(unsigned(current_row)) - (to_integer(unsigned(s_bird_y_pos)) - 16), s_otter_pos_row'length))
+	s_otter_pos_row <= std_logic_vector(to_unsigned(to_integer(unsigned(current_row)) - (to_integer(unsigned(s_bird_y_pos)) - 32), s_otter_pos_row'length))
 					when s_otter_within_bounds = '1' else (others => '0');
 
 	-- otter visibility
@@ -127,52 +127,85 @@ BEGIN
 		end if;
 	end process;
 
-	process (VGA_VS, bird_reset)
+	process (VGA_VS, bird_reset, left_button, game_state)
+		variable v_bird_x_pos 				: std_logic_vector(9 DOWNTO 0);
+		variable v_bird_y_pos 				: std_logic_vector(9 DOWNTO 0);
+		variable v_vel						: integer range -7 to 100 := 0;
 		variable v_acceleration				: integer range 0 to 3;
-		variable v_flap_velocity			: integer range -12 to 0;
+		variable v_flap_velocity			: integer range -7 to 0;
 		variable v_left_button_one_shot 	: std_logic;
+		variable v_previous_left_button		: std_logic;
 	begin
-		if (rising_edge(VGA_VS)) then
+		if (bird_reset = '1') then
+			s_bird_y_pos <= std_logic_vector(to_unsigned(230,10));
+			s_bird_x_pos <= std_logic_vector(to_unsigned(100,10));
+			s_vel <= 0;
+		elsif (rising_edge(VGA_VS)) then
+			case game_state is
+				when start_menu =>
+					v_flap_velocity := 0;
+					v_acceleration := 0;
+				when practice | easy | medium | hard =>
+					v_flap_velocity := -7;
+					v_acceleration := 1;
+				when game_over =>
+					v_flap_velocity := 0;
+					v_acceleration := 0;
+				when others =>
+					v_flap_velocity := 0;
+					v_acceleration := 0;
+			end case;
+
+			v_left_button_one_shot := s_left_button_one_shot;
+
 			-- if left button has changes then one shot equals left button
 			if (left_button /= s_previous_left_button) then
 				v_left_button_one_shot := left_button;
+				s_left_button_one_shot <= v_left_button_one_shot;
 				s_previous_left_button <= left_button;
 			else 
 				v_left_button_one_shot := '0';
 			end if;
 
 			if (game_state /= s_previous_game_state) then
+				
 				s_previous_game_state <= game_state;
-				-- setting init velocity and positions
+
 				case game_state is
 					when start_menu =>
-						s_bird_y_pos <= std_logic_vector(to_unsigned(230,10));
-						s_vel <= 0;
+						v_bird_y_pos := std_logic_vector(to_unsigned(230,10));
+						v_bird_x_pos := std_logic_vector(to_unsigned(100,10));
+						v_vel := 0;
 					when practice | easy =>
-						s_vel <= -7;
+						v_vel := -7;
 					when game_over =>
-						s_vel <= 0;
+						v_vel := 0;
 					when others =>
 						null;
 				end case;
+				
 			else 
-				if (v_left_button_one_shot = '1' and game_state /= game_over and game_state /= start_menu) then
-					s_vel <= v_flap_velocity;
+				if (v_left_button_one_shot ='1' and game_state /= game_over and game_state /= start_menu) then
+					v_vel := v_flap_velocity;
+					v_left_button_one_shot := '0';
 				else
 					if (s_vga_counter < 1) then
 						s_vga_counter <= s_vga_counter + 1;
 					else
-						s_vel <= s_vel + v_acceleration;
+						v_vel := s_vel + v_acceleration;
 						s_vga_counter <= 0;
 					end if;	
 				end if;
-				-- gravity affecting y pos
-				s_bird_y_pos <= std_logic_vector(to_unsigned((to_integer(unsigned(s_bird_y_pos)) + s_vel),10));
+				
+				v_bird_y_pos := std_logic_vector(to_unsigned(to_integer(unsigned(s_bird_y_pos)) + v_vel,10));
+	
 			end if;
+
+			s_bird_y_pos <= v_bird_y_pos;
+			s_bird_x_pos <= v_bird_x_pos;
+
+			s_vel <= v_vel;
 		end if;
-		if (bird_reset = '1') then
-			s_bird_y_pos <= std_logic_vector(to_unsigned(230,10));
-			s_vel <= 0;
-	end if;
+
 	end process;
 END behaviour;
