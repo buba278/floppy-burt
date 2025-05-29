@@ -398,13 +398,7 @@ begin
         s_final_g <= s_bg_g;
         s_final_b <= s_bg_b;
 
-        -- ball
-        if (s_bird_visible = '1') then
-            s_final_r <= s_bird_r;
-            s_final_g <= s_bird_g;
-            s_final_b <= s_bird_b;
-        end if;
-
+        
         -- pipe1
         if (s_pipe1_visible = '1') then
             s_final_r <= s_pipe1_r;
@@ -424,6 +418,13 @@ begin
             s_final_r <= s_pipe3_r;
             s_final_g <= s_pipe3_g;
             s_final_b <= s_pipe3_b;
+        end if;
+
+        -- ball
+        if (s_bird_visible = '1') then
+            s_final_r <= s_bird_r;
+            s_final_g <= s_bird_g;
+            s_final_b <= s_bird_b;
         end if;
 
         -- text

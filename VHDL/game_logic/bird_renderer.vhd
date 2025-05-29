@@ -32,7 +32,7 @@ architecture behaviour of bird_renderer is
 	signal s_vel						: integer range -12 to 100 := 0;
 
 	signal s_acceleration				: integer range 0 to 3 := 0;
-	signal s_flap_velocity				: integer range -12 to 0 := -8;
+	signal s_flap_velocity				: integer range -12 to 0 := -7;
 
 	signal s_previous_game_state		: state_type;
 
@@ -81,7 +81,7 @@ BEGIN
 					v_flap_velocity := 0;
 					v_acceleration := 0;
 				when practice | easy | medium | hard =>
-					v_flap_velocity := -8;
+					v_flap_velocity := -7;
 					v_acceleration := 1;
 				when game_over =>
 					v_flap_velocity := 0;
@@ -112,7 +112,7 @@ BEGIN
 						v_bird_x_pos := CONV_STD_LOGIC_VECTOR(100,10);
 						v_vel := 0;
 					when practice | easy =>
-						v_vel := -8;
+						v_vel := -7;
 					when game_over =>
 						v_vel := 0;
 					when others =>

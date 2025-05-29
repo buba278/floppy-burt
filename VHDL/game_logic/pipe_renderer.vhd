@@ -36,7 +36,7 @@ architecture behaviour of pipe_renderer is
     
     signal gap1_seed, gap2_seed, gap3_seed                      : unsigned(5 downto 0);
     signal gap1_y_pos, gap2_y_pos, gap3_y_pos                   : unsigned(11 downto 0);
-    signal gap_height                                           : unsigned(9 downto 0) := to_unsigned(60, 10);
+    signal gap_height                                           : unsigned(9 downto 0) := to_unsigned(65, 10);
 
     signal s_pipe1_on, s_pipe2_on, s_pipe3_on                   : std_logic_vector(3 downto 0);
     signal s_pipe1_on_bool, s_pipe2_on_bool, s_pipe3_on_bool    : std_logic;
