@@ -107,7 +107,7 @@ begin
                 previous_game_state <= game_state;
 
                 case game_state is
-					when start | practice | easy =>
+					when start_menu | practice | easy =>
                         pipe1_x_pos <= 690 + pipe_width;
                         pipe2_x_pos <= 904 + pipe_width;
                         pipe3_x_pos <= 1117 + pipe_width;
