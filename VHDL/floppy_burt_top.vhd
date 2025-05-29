@@ -162,6 +162,7 @@ architecture test_game of floppy_burt_top is
     component shield_renderer is
         port (
             clk, reset                              : IN std_logic;
+            vga_vs                                  : IN std_logic;
             game_state                              : IN state_type;
             lfsr_value                              : IN std_logic_vector(9 downto 0);
             current_row, current_col                : IN std_logic_vector(9 downto 0);
@@ -414,8 +415,9 @@ begin
     sh1: shield_renderer
     port map (
         -- input
-        clk => s_VGA_VS,
+        clk => clock_25Mhz,
         reset => s_rst,
+        vga_vs => s_VGA_VS,
         game_state => s_game_state,
         lfsr_value => s_lfsr_out,
         current_row => s_pix_row,
@@ -435,8 +437,10 @@ begin
 
     -- ======= RENDERER =======
 
-    process(s_bird_r,s_bird_g,s_bird_b,s_bird_visible,s_text_r,s_text_g,s_text_b,s_text_visible, 
-            s_pipe1_r,s_pipe1_g,s_pipe1_b,s_pipe1_visible, s_pipe2_r,s_pipe2_g,s_pipe2_b,s_pipe2_visible,
+    process(s_bird_r,s_bird_g,s_bird_b,s_bird_visible,
+            s_text_r,s_text_g,s_text_b,s_text_visible, 
+            s_pipe1_r,s_pipe1_g,s_pipe1_b,s_pipe1_visible, 
+            s_pipe2_r,s_pipe2_g,s_pipe2_b,s_pipe2_visible,
             s_pipe3_r,s_pipe3_g,s_pipe3_b,s_pipe3_visible,
             s_screen_r,s_screen_g,s_screen_b,s_game_state,
             s_shield_visible, s_shield_r, s_shield_g, s_shield_b)
