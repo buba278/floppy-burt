@@ -139,13 +139,13 @@ architecture test_game of floppy_burt_top is
         );
     end component lfsr;
 
-    -- component bg_renderer IS
-	-- PORT ( 
-    --  vsync, clock                : IN std_logic;
-	-- 	current_row, current_col	: IN std_logic_vector(9 DOWNTO 0); -- bgs only need 8bit but it alg
-	-- 	red, green, blue            : OUT std_logic_vector(3 downto 0) -- 4bit color
-	-- );		
-    -- END component bg_renderer;
+    component bg_renderer IS
+	PORT ( 
+     vsync, clock                : IN std_logic;
+		current_row, current_col	: IN std_logic_vector(9 DOWNTO 0); -- bgs only need 8bit but it alg
+		red, green, blue            : OUT std_logic_vector(3 downto 0) -- 4bit color
+	);		
+    END component bg_renderer;
 
     component screen_renderer IS
 	PORT ( 
@@ -174,7 +174,7 @@ architecture test_game of floppy_burt_top is
     signal s_score_out : std_logic_vector(9 downto 0);
 
     -- bg sprite
-    -- signal s_bg_r, s_bg_g, s_bg_b : std_logic_vector(3 downto 0);
+    signal s_bg_r, s_bg_g, s_bg_b : std_logic_vector(3 downto 0);
     -- screen sprites
     -- bg sprite
     signal s_screen_r, s_screen_g, s_screen_b : std_logic_vector(3 downto 0);
@@ -358,18 +358,18 @@ begin
         lfsr_out => s_lfsr_out
     );
 
-    -- bg1: bg_renderer
-    -- port map (
-    --     -- in
-    --     vsync => s_VGA_VS,
-    --     clock => clock_25Mhz,
-    --     current_row => s_pix_row,
-    --     current_col => s_pix_col,
-    --     -- output
-    --     red => s_bg_r,  
-    --     green => s_bg_g,
-    --     blue => s_bg_b
-    -- );
+    bg1: bg_renderer
+    port map (
+        -- in
+        vsync => s_VGA_VS,
+        clock => clock_25Mhz,
+        current_row => s_pix_row,
+        current_col => s_pix_col,
+        -- output
+        red => s_bg_r,  
+        green => s_bg_g,
+        blue => s_bg_b
+    );
 
     sc1: screen_renderer
     port map (
@@ -393,13 +393,13 @@ begin
     begin
         -- Layers
         -- background
-        -- s_final_r <= s_bg_r;
-        -- s_final_g <= s_bg_g;
-        -- s_final_b <= s_bg_b;
+        s_final_r <= s_bg_r;
+        s_final_g <= s_bg_g;
+        s_final_b <= s_bg_b;
 
-        s_final_r <= "0000";
-        s_final_g <= "0000";
-        s_final_b <= "0000";
+        -- s_final_r <= "0000";
+        -- s_final_g <= "0000";
+        -- s_final_b <= "0000";
         
         -- pipe1
         if (s_pipe1_visible = '1') then
@@ -447,15 +447,6 @@ begin
     -- Final Assignment (no rgb as done by vga sync)
     VGA_VS <= s_VGA_VS;
     VGA_HS <= s_VGA_HS;
-
-    -- text config
-    --s_char_count <= 7 when KEY(0) = '1' else 5;
-    --s_char <= char_scorehash when KEY(0) = '1' else -- 'SCORE #'
-    --          char_hello; -- 'hello'
-    --s_text_scale <= 1 when KEY(0) = '1' else 2;
-
-    --s_text_origin_col <= "0000010100"; -- Column 20
-    --s_text_origin_row <= "0000010100"; -- Row 20
 
     -- LEDR to represent game state
     with s_game_state select
