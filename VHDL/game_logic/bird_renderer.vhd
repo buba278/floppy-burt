@@ -29,15 +29,17 @@ architecture behaviour of bird_renderer is
 	signal s_bird_x_pos					: std_logic_vector(9 DOWNTO 0) := CONV_STD_LOGIC_VECTOR(100,10);
 
 	signal s_reset_vel					: std_logic := '0';
-	signal s_vel						: integer range -12 to 100 := 0 ;
+	signal s_vel						: integer range -12 to 100 := 0;
 
-	signal s_acceleration				: integer range 0 to 3 := 0 ;
-	signal s_flap_velocity				: integer range -12 to 0 := -11;
+	signal s_acceleration				: integer range 0 to 3 := 0;
+	signal s_flap_velocity				: integer range -12 to 0 := -8;
 
 	signal s_previous_game_state		: state_type;
 
 	signal s_left_button_one_shot 		: std_logic := '0';
 	signal s_previous_left_button		: std_logic := '0';
+
+	signal s_vga_counter 					: integer range 0 to 3 := 0; -- used to slow down the bird movement
 BEGIN           
 
 	-- radius of ball & x pos
@@ -63,7 +65,7 @@ BEGIN
 	process (VGA_VS, bird_reset)
 		variable v_bird_x_pos 				: std_logic_vector(9 DOWNTO 0);
 		variable v_bird_y_pos 				: std_logic_vector(9 DOWNTO 0);
-		variable v_vel						: integer range -12 to 100;
+		variable v_vel						: integer range -12 to 100 := 0;
 		variable v_acceleration				: integer range 0 to 3;
 		variable v_flap_velocity			: integer range -12 to 0;
 		variable v_left_button_one_shot 	: std_logic;
@@ -79,7 +81,7 @@ BEGIN
 					v_flap_velocity := 0;
 					v_acceleration := 0;
 				when practice | easy | medium | hard =>
-					v_flap_velocity := -11;
+					v_flap_velocity := -8;
 					v_acceleration := 1;
 				when game_over =>
 					v_flap_velocity := 0;
@@ -110,7 +112,7 @@ BEGIN
 						v_bird_x_pos := CONV_STD_LOGIC_VECTOR(100,10);
 						v_vel := 0;
 					when practice | easy =>
-						v_vel := -11;
+						v_vel := -8;
 					when game_over =>
 						v_vel := 0;
 					when others =>
@@ -121,11 +123,16 @@ BEGIN
 				if (v_left_button_one_shot ='1' and game_state /= game_over and game_state /= start_menu) then
 					v_vel := v_flap_velocity;
 				else
-					v_vel := s_vel + v_acceleration;
+					if (s_vga_counter < 1) then
+						s_vga_counter <= s_vga_counter + 1;
+					else
+						v_vel := s_vel + v_acceleration;
+						s_vga_counter <= 0;
+					end if;	
 				end if;
 				
 				v_bird_y_pos := s_bird_y_pos + CONV_STD_LOGIC_VECTOR(v_vel,10);
-
+	
 			end if;
 
 			s_bird_y_pos <= v_bird_y_pos;
