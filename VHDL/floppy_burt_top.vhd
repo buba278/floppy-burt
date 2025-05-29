@@ -527,7 +527,7 @@ begin
 
     -- mouse indicators
     LEDR(1) <= s_left_button;
-    LEDR(0) <= s_right_button;
+    LEDR(0) <= s_shield_ability_active;
 
     LEDR(4) <= s_bird_reset;
 

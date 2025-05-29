@@ -44,6 +44,8 @@ architecture behaviour of shield_renderer is
 
     signal s_score_when_shield_ability : integer range 0 to 999 := 0;
 
+    signal s_shield_collision : std_logic := '0'; -- signal to indicate if shield has collided with bird
+
     -- shield visibility
     signal s_shield_on          : std_logic_vector(3 downto 0);
     signal s_shield_on_bool     : std_logic := '0';
@@ -68,6 +70,8 @@ begin
     shield_visible <= s_shield_on_bool; 
 
     shield_ability_active <= s_shield_ability_active;
+
+    s_shield_collision <= '1' when (s_shield_on_bool = '1' and bird_visible = '1') else '0';
 
     -- shield velocity based on game state
     with game_state select
@@ -118,7 +122,7 @@ begin
                 s_previous_score <= score;
                 -- Detect score milestone
                 -- if game_start_bool is 1, score greater than 0, score mod 10 is 0 and previous score mod 10 is not 0
-                if (s_game_start_bool = '1' and (unsigned(score) > 0) and (unsigned(score) mod 10 = 0) and (unsigned(s_previous_score) mod 10 /= 0)) then
+                if (s_game_start_bool = '1' and (unsigned(score) > 0) and (unsigned(score) mod 7 = 0) and (unsigned(s_previous_score) mod 7 /= 0)) then
                     s_waiting_for_shield <= '1';
                 end if;
 
@@ -144,7 +148,7 @@ begin
                     end if;
 
                     -- Check collision with bird
-                    if (s_shield_on_bool = '1' and bird_visible = '1') then
+                    if (s_shield_collision = '1') then
                         -- Collision detected, deactivate shield
                         s_shield_icon_active <= '0';
                         s_shield_ability_active <= '1';

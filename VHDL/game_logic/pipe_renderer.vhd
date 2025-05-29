@@ -36,7 +36,7 @@ architecture behaviour of pipe_renderer is
     
     -- for the gaps in the pipes
     signal gap1_seed, gap2_seed, gap3_seed                          : unsigned(5 downto 0);
-    signal gap1_y_pos, gap2_y_pos, gap3_y_pos                       : integer range 0 to 480 := 0;
+    signal gap1_y_pos, gap2_y_pos, gap3_y_pos                       : integer range 0 to 512 := 0;
     signal gap_height                                               : integer range 0 to 128 := 65; -- half of the total gap size
 
     -- for moving pipes in hard mode
