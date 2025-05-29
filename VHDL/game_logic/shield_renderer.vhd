@@ -1,7 +1,7 @@
 LIBRARY ieee;
 USE ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
-USE work.fsm_states_pkg.all
+USE work.fsm_states_pkg.all;
 
 entity shield_renderer is
     port (

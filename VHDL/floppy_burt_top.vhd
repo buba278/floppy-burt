@@ -69,7 +69,7 @@ architecture test_game of floppy_burt_top is
     component bird_renderer IS
         port (
             left_button, right_button   : IN std_logic;
-            VGA_VS                      : IN std_logic;
+            VGA_VS, clock               : IN std_logic;
             current_row, current_col	: IN std_logic_vector(9 DOWNTO 0);
             bird_reset					: IN std_logic;
 		    game_state 					: IN state_type;
@@ -272,6 +272,7 @@ begin
             left_button => s_left_button,
             right_button => s_right_button,
             VGA_VS => s_VGA_VS,
+            clock => clock_25Mhz,
             current_row => s_pix_row, 
             current_col => s_pix_col,
             bird_reset => s_bird_reset,
@@ -395,7 +396,6 @@ begin
         s_final_r <= s_bg_r;
         s_final_g <= s_bg_g;
         s_final_b <= s_bg_b;
-
         
         -- pipe1
         if (s_pipe1_visible = '1') then
@@ -438,7 +438,6 @@ begin
             s_final_g <= s_screen_g;
             s_final_b <= s_screen_b;
         end if;
-        
     end process;
 
     -- Final Assignment (no rgb as done by vga sync)

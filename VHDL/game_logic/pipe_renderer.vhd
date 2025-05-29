@@ -23,22 +23,22 @@ architecture behaviour of pipe_renderer is
     constant screen_width       : integer range 0 to 1023   := 640;
     constant bird_x_pos         : integer range 0 to 127    := 100;   -- x position of the bird
 
-    signal previous_game_state  : state_type := start_menu;
-    signal score                : std_logic_vector(9 downto 0) := (others => '0');
-    signal s_game_start_bool    : std_logic := '0';
+    signal s_previous_game_state    : state_type := start_menu;
+    signal s_score                  : std_logic_vector(9 downto 0) := (others => '0');
+    signal s_game_start_bool        : std_logic := '0';
 
     -- tracks the right edge of the pipes
-    signal pipe1_x_pos          : integer := 690 + pipe_width; -- pipes start off screen
-    signal pipe2_x_pos          : integer := 904 + pipe_width;
-    signal pipe3_x_pos          : integer := 1117 + pipe_width;
-    signal pipe_velocity        : integer range 0 to 8  := 0;
+    signal s_pipe1_x_pos          : integer := 690 + pipe_width; -- pipes start off screen
+    signal s_pipe2_x_pos          : integer := 904 + pipe_width;
+    signal s_pipe3_x_pos          : integer := 1117 + pipe_width;
+    signal s_pipe_velocity        : integer range 0 to 8  := 0;
     
-    signal gap1_seed, gap2_seed, gap3_seed                          : unsigned(5 downto 0);
-    signal gap1_y_pos, gap2_y_pos, gap3_y_pos                       : integer range 0 to 480 := 0;
-    signal moving_gap1_bool, moving_gap2_bool, moving_gap3_bool     : boolean := false;
-    signal gap1_displacement, gap2_displacement, gap3_displacement  : integer range -320 to 320 := 0;
-    signal gap1_velocity, gap2_velocity, gap3_velocity              : integer range -4 to 4 := 0;
-    signal gap_height                                               : integer range 0 to 128 := 65; -- half of the total gap size
+    signal s_gap1_seed, s_gap2_seed, s_gap3_seed                          : unsigned(5 downto 0);
+    signal s_gap1_y_pos, s_gap2_y_pos, s_gap3_y_pos                       : integer range 0 to 480 := 0;
+    signal s_moving_gap1_bool, s_moving_gap2_bool, s_moving_gap3_bool     : boolean := false;
+    signal s_gap1_displacement, s_gap2_displacement, s_gap3_displacement  : integer range -320 to 320 := 0;
+    signal s_gap1_velocity, s_gap2_velocity, s_gap3_velocity              : integer range -4 to 4 := 0;
+    signal s_gap_height                                                   : integer range 0 to 128 := 65; -- half of the total gap size
 
     signal s_pipe1_on, s_pipe2_on, s_pipe3_on                       : std_logic_vector(3 downto 0);
     signal s_pipe1_on_bool, s_pipe2_on_bool, s_pipe3_on_bool        : std_logic;
@@ -48,20 +48,20 @@ begin
     -- game started when game_state is in practice, easy, medium or hard
     s_game_start_bool <= '1' when (game_state = practice) or (game_state = easy) or (game_state = medium) or (game_state = hard) else '0';
 
-    gap1_y_pos <= 80 + (to_integer(gap1_seed) * 5) + gap1_displacement;
-    gap2_y_pos <= 80 + (to_integer(gap2_seed) * 5) + gap2_displacement;
-    gap3_y_pos <= 80 + (to_integer(gap3_seed) * 5) + gap3_displacement;
+    s_gap1_y_pos <= 80 + (to_integer(s_gap1_seed) * 5) + s_gap1_displacement;
+    s_gap2_y_pos <= 80 + (to_integer(s_gap2_seed) * 5) + s_gap2_displacement;
+    s_gap3_y_pos <= 80 + (to_integer(s_gap3_seed) * 5) + s_gap3_displacement;
 
-    s_pipe1_on_bool <= '1' when (to_integer(unsigned(current_col)) >= (pipe1_x_pos - pipe_width)) and (to_integer(unsigned(current_col)) <= pipe1_x_pos)
-                            and ((to_integer(unsigned(current_row)) <= (gap1_y_pos - gap_height)) or (to_integer(unsigned(current_row)) >= (gap1_y_pos + gap_height)))
+    s_pipe1_on_bool <= '1' when (to_integer(unsigned(current_col)) >= (s_pipe1_x_pos - pipe_width)) and (to_integer(unsigned(current_col)) <= s_pipe1_x_pos)
+                            and ((to_integer(unsigned(current_row)) <= (s_gap1_y_pos - s_gap_height)) or (to_integer(unsigned(current_row)) >= (s_gap1_y_pos + s_gap_height)))
                             else '0';
 
-    s_pipe2_on_bool <= '1' when (to_integer(unsigned(current_col)) >= (pipe2_x_pos - pipe_width)) and (to_integer(unsigned(current_col)) <= pipe2_x_pos)
-                            and ((to_integer(unsigned(current_row)) <= (gap2_y_pos - gap_height)) or (to_integer(unsigned(current_row)) >= (gap2_y_pos + gap_height)))
+    s_pipe2_on_bool <= '1' when (to_integer(unsigned(current_col)) >= (s_pipe2_x_pos - pipe_width)) and (to_integer(unsigned(current_col)) <= s_pipe2_x_pos)
+                            and ((to_integer(unsigned(current_row)) <= (s_gap2_y_pos - s_gap_height)) or (to_integer(unsigned(current_row)) >= (s_gap2_y_pos + s_gap_height)))
                             else '0';
 
-    s_pipe3_on_bool <= '1' when (to_integer(unsigned(current_col)) >= (pipe3_x_pos - pipe_width)) and (to_integer(unsigned(current_col)) <= pipe3_x_pos)
-                            and ((to_integer(unsigned(current_row)) <= (gap3_y_pos - gap_height)) or (to_integer(unsigned(current_row)) >= (gap3_y_pos + gap_height)))
+    s_pipe3_on_bool <= '1' when (to_integer(unsigned(current_col)) >= (s_pipe3_x_pos - pipe_width)) and (to_integer(unsigned(current_col)) <= s_pipe3_x_pos)
+                            and ((to_integer(unsigned(current_row)) <= (s_gap3_y_pos - s_gap_height)) or (to_integer(unsigned(current_row)) >= (s_gap3_y_pos + s_gap_height)))
                             else '0';
 
     s_pipe1_on <= (others => s_pipe1_on_bool);
@@ -76,10 +76,10 @@ begin
     pipe2_visible <= s_pipe2_on_bool;
     pipe3_visible <= s_pipe3_on_bool;
 
-    score_out <= score;
+    score_out <= s_score;
 
     with game_state select
-    pipe_velocity <= 2 when practice,
+    s_pipe_velocity <= 2 when practice,
                      2 when easy, 
                      4 when medium,
                      4 when hard,
@@ -91,42 +91,42 @@ begin
     begin
         -- functionality for resetting the pipes in practice mode
         if (reset = '1') then
-                pipe1_x_pos <= 690 + pipe_width;
-                pipe2_x_pos <= 904 + pipe_width;
-                pipe3_x_pos <= 1117 + pipe_width;
+                s_pipe1_x_pos <= 690 + pipe_width;
+                s_pipe2_x_pos <= 904 + pipe_width;
+                s_pipe3_x_pos <= 1117 + pipe_width;
 
-                gap1_seed <= unsigned(lfsr_value(9 downto 4));
-                gap2_seed <= unsigned(lfsr_value(7 downto 2));
-                gap3_seed <= unsigned(lfsr_value(5 downto 0));
+                s_gap1_seed <= unsigned(lfsr_value(9 downto 4));
+                s_gap2_seed <= unsigned(lfsr_value(7 downto 2));
+                s_gap3_seed <= unsigned(lfsr_value(5 downto 0));
 
-                score <= (others => '0');
+                s_score <= (others => '0');
 
         elsif (rising_edge(clk)) then
-            if (game_state /= previous_game_state) then 
+            if (game_state /= s_previous_game_state) then 
 
-                previous_game_state <= game_state;
+                s_previous_game_state <= game_state;
 
                 case game_state is
 					when start_menu | practice | easy =>
-                        pipe1_x_pos <= 690 + pipe_width;
-                        pipe2_x_pos <= 904 + pipe_width;
-                        pipe3_x_pos <= 1117 + pipe_width;
+                        s_pipe1_x_pos <= 690 + pipe_width;
+                        s_pipe2_x_pos <= 904 + pipe_width;
+                        s_pipe3_x_pos <= 1117 + pipe_width;
         
-                        gap1_seed <= unsigned(lfsr_value(9 downto 4));
-                        gap2_seed <= unsigned(lfsr_value(7 downto 2));
-                        gap3_seed <= unsigned(lfsr_value(5 downto 0));
+                        s_gap1_seed <= unsigned(lfsr_value(9 downto 4));
+                        s_gap2_seed <= unsigned(lfsr_value(7 downto 2));
+                        s_gap3_seed <= unsigned(lfsr_value(5 downto 0));
 
-                        gap1_velocity <= 0;
-                        gap2_velocity <= 0;
-                        gap3_velocity <= 0;
-                        gap1_displacement <= 0;
-                        gap2_displacement <= 0;
-                        gap3_displacement <= 0;
-                        moving_gap1_bool <= false;
-                        moving_gap2_bool <= false;
-                        moving_gap3_bool <= false;
+                        s_gap1_velocity <= 0;
+                        s_gap2_velocity <= 0;
+                        s_gap3_velocity <= 0;
+                        s_gap1_displacement <= 0;
+                        s_gap2_displacement <= 0;
+                        s_gap3_displacement <= 0;
+                        s_moving_gap1_bool <= false;
+                        s_moving_gap2_bool <= false;
+                        s_moving_gap3_bool <= false;
         
-                        score <= (others => '0');
+                        s_score <= (others => '0');
 					when others =>
 						null;
 				end case;
@@ -134,104 +134,104 @@ begin
             elsif (s_game_start_bool = '1') then
 
                 -- reset pipe 1 position when it reaches the left side of the screen
-                if (pipe1_x_pos) <= (pipe_velocity - 1) then
-                    pipe1_x_pos <= screen_width + pipe_width;
-                    gap1_seed <= unsigned(lfsr_value(9 downto 4));
+                if (s_pipe1_x_pos) <= (s_pipe_velocity - 1) then
+                    s_pipe1_x_pos <= screen_width + pipe_width;
+                    s_gap1_seed <= unsigned(lfsr_value(9 downto 4));
 
                     -- if in hard mode, pipe 1 has a chance of moving vertically
                     if (game_state = hard) then
-                        gap1_displacement <= 0;
-                        moving_gap1_bool <= (unsigned(lfsr_value(9 downto 0)) <= to_unsigned(512, 10)); -- 50% chance of pipe moving vertically for testin
-                        if (moving_gap1_bool = true) then
+                        s_gap1_displacement <= 0;
+                        s_moving_gap1_bool <= (unsigned(lfsr_value(9 downto 0)) <= to_unsigned(512, 10)); -- 50% chance of pipe moving vertically for testin
+                        if (s_moving_gap1_bool = true) then
                             if (lfsr_value(0) = '1') then
-                                gap1_velocity <= -1; -- move up
+                                s_gap1_velocity <= -1; -- move up
                             else
-                                gap1_velocity <= 1; -- move down
+                                s_gap1_velocity <= 1; -- move down
                             end if;
                         end if;
                     end if;
                 else
 
                     -- pipe 1 horizontal movement
-                    pipe1_x_pos <= pipe1_x_pos - pipe_velocity;
+                    s_pipe1_x_pos <= s_pipe1_x_pos - s_pipe_velocity;
 
                     -- pipe 1 vertical movement
-                    if (moving_gap1_bool = true) then
-                        if (((gap1_y_pos <= 80) and (gap1_velocity = -1)) or ((gap1_y_pos >= 400) and (gap1_velocity = 1))) then
-                            gap1_velocity <= -gap1_velocity;
+                    if (s_moving_gap1_bool = true) then
+                        if (((s_gap1_y_pos <= 80) and (s_gap1_velocity = -1)) or ((s_gap1_y_pos >= 400) and (s_gap1_velocity = 1))) then
+                            s_gap1_velocity <= -s_gap1_velocity;
                         end if;
-                        gap1_displacement <= gap1_displacement + gap1_velocity;
+                        s_gap1_displacement <= s_gap1_displacement + s_gap1_velocity;
                     end if;
                 end if;
                 
                 -- reset pipe 2 position when it reaches the left side of the screen
-                if (pipe2_x_pos) <= (pipe_velocity - 1) then
-                    pipe2_x_pos <= screen_width + pipe_width;
-                    gap2_seed <= unsigned(lfsr_value(9 downto 4));
+                if (s_pipe2_x_pos) <= (s_pipe_velocity - 1) then
+                    s_pipe2_x_pos <= screen_width + pipe_width;
+                    s_gap2_seed <= unsigned(lfsr_value(9 downto 4));
 
                     -- if in hard mode, pipe 2 has a chance of moving vertically
                     if (game_state = hard) then
-                        gap2_displacement <= 0;
-                        moving_gap2_bool <= (unsigned(lfsr_value(9 downto 0)) <= to_unsigned(512, 10)); -- 50% chance of pipe moving vertically for testin
-                        if (moving_gap2_bool = true) then
+                        s_gap2_displacement <= 0;
+                        s_moving_gap2_bool <= (unsigned(lfsr_value(9 downto 0)) <= to_unsigned(512, 10)); -- 50% chance of pipe moving vertically for testin
+                        if (s_moving_gap2_bool = true) then
                             if (lfsr_value(0) = '1') then
-                                gap2_velocity <= -1; -- move up
+                                s_gap2_velocity <= -1; -- move up
                             else
-                                gap2_velocity <= 1; -- move down
+                                s_gap2_velocity <= 1; -- move down
                             end if;
                         end if;
                     end if;
                 else
 
                     -- pipe 2 horizontal movement
-                    pipe2_x_pos <= pipe2_x_pos - pipe_velocity;
+                    s_pipe2_x_pos <= s_pipe2_x_pos - s_pipe_velocity;
 
                     -- pipe 2 vertical movement
-                    if (moving_gap2_bool = true) then
-                        if (((gap2_y_pos <= 80) and (gap2_velocity = -1)) or ((gap2_y_pos >= 400) and (gap2_velocity = 1))) then
-                            gap2_velocity <= -gap2_velocity;
+                    if (s_moving_gap2_bool = true) then
+                        if (((s_gap2_y_pos <= 80) and (s_gap2_velocity = -1)) or ((s_gap2_y_pos >= 400) and (s_gap2_velocity = 1))) then
+                            s_gap2_velocity <= -s_gap2_velocity;
                         end if;
-                        gap2_displacement <= gap2_displacement + gap2_velocity;
+                        s_gap2_displacement <= s_gap2_displacement + s_gap2_velocity;
                     end if;
                 end if;
 
                 -- reset pipe 3 position when it reaches the left side of the screen
-                if (pipe3_x_pos) <= (pipe_velocity - 1) then
-                    pipe3_x_pos <= screen_width + pipe_width;
-                    gap3_seed <= unsigned(lfsr_value(9 downto 4));
+                if (s_pipe3_x_pos) <= (s_pipe_velocity - 1) then
+                    s_pipe3_x_pos <= screen_width + pipe_width;
+                    s_gap3_seed <= unsigned(lfsr_value(9 downto 4));
 
                     -- if in hard mode, pipe 1 has a chance of moving vertically
                     if (game_state = hard) then
-                        gap3_displacement <= 0;
-                        moving_gap3_bool <= (unsigned(lfsr_value(9 downto 0)) <= to_unsigned(512, 10)); -- 50% chance of pipe moving vertically for testin
-                        if (moving_gap3_bool = true) then
+                        s_gap3_displacement <= 0;
+                        s_moving_gap3_bool <= (unsigned(lfsr_value(9 downto 0)) <= to_unsigned(512, 10)); -- 50% chance of pipe moving vertically for testin
+                        if (s_moving_gap3_bool = true) then
                             if (lfsr_value(0) = '1') then
-                                gap3_velocity <= -1; -- move up
+                                s_gap3_velocity <= -1; -- move up
                             else
-                                gap3_velocity <= 1; -- move down
+                                s_gap3_velocity <= 1; -- move down
                             end if;
                         end if;
                     end if;
                 else
 
                     -- pipe 3 horizontal movement
-                    pipe3_x_pos <= pipe3_x_pos - pipe_velocity;
+                    s_pipe3_x_pos <= s_pipe3_x_pos - s_pipe_velocity;
 
                     -- pipe 3 vertical movement
-                    if (moving_gap3_bool = true) then
-                        if (((gap3_y_pos <= 80) and (gap3_velocity = -1)) or ((gap3_y_pos >= 400) and (gap3_velocity = 1))) then
-                            gap3_velocity <= -gap3_velocity;
+                    if (s_moving_gap3_bool = true) then
+                        if (((s_gap3_y_pos <= 80) and (s_gap3_velocity = -1)) or ((s_gap3_y_pos >= 400) and (s_gap3_velocity = 1))) then
+                            s_gap3_velocity <= -s_gap3_velocity;
                         end if;
-                        gap3_displacement <= gap3_displacement + gap3_velocity;
+                        s_gap3_displacement <= s_gap3_displacement + s_gap3_velocity;
                     end if;
                 end if;
 
-                -- score counting
-                if ((pipe1_x_pos <= bird_x_pos) and (pipe1_x_pos >= (bird_x_pos - (pipe_velocity - 1)))) or
-                    ((pipe2_x_pos <= bird_x_pos) and (pipe2_x_pos >= (bird_x_pos - (pipe_velocity - 1)))) or
-                    ((pipe3_x_pos <= bird_x_pos) and (pipe3_x_pos >= (bird_x_pos - (pipe_velocity - 1)))) then
+                -- s_score counting
+                if ((s_pipe1_x_pos <= bird_x_pos) and (s_pipe1_x_pos >= (bird_x_pos - (s_pipe_velocity - 1)))) or
+                    ((s_pipe2_x_pos <= bird_x_pos) and (s_pipe2_x_pos >= (bird_x_pos - (s_pipe_velocity - 1)))) or
+                    ((s_pipe3_x_pos <= bird_x_pos) and (s_pipe3_x_pos >= (bird_x_pos - (s_pipe_velocity - 1)))) then
 
-                    score <= std_logic_vector(unsigned(score) + 1);
+                    s_score <= std_logic_vector(unsigned(s_score) + 1);
                 end if;
 
             end if;
