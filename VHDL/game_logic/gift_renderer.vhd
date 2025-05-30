@@ -131,7 +131,7 @@ begin
 
                 -- Detect score milestone
                 -- if game_start_bool is 1, score greater than 0, score mod 10 is 0 and previous score mod 10 is not 0
-                if ((unsigned(score) > 0) and (unsigned(score) mod 7 = 0) and (unsigned(s_previous_score) mod 7 /= 0) and s_gift_icon_active = '0') then
+                if ((unsigned(score) > 0) and (unsigned(score) mod 10 = 0) and (unsigned(s_previous_score) mod 10 /= 0) and s_gift_icon_active = '0') then
                     s_gift_icon_active <= '1';
                 end if;
 

@@ -530,16 +530,9 @@ begin
 
         -- gift
         if (s_gift_visible = '1') then
-            s_final_r <= s_gift_r;
-            s_final_g <= s_gift_g;
-            s_final_b <= s_gift_b;
-        end if;
-
-        -- gift
-        if (s_gift_visible = '1') then
-            s_final_r <= s_gift_r;
-            s_final_g <= s_gift_g;
-            s_final_b <= s_gift_b;
+            current_r := s_gift_r;
+            current_g := s_gift_g;
+            current_b := s_gift_b;
         end if;
 
         -- Layer 5: Text (Opaque - drawn on top of bird/pipes/background)
