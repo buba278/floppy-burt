@@ -43,19 +43,18 @@ architecture behaviour of display_7seg is
 begin
 
     -- Display 'SC' as the first two characters
-
     b5: bcd_to_sevenseg_char
     port map (
         bcd_digit    => bcd_value_5,
         sevenseg_out => seven_seg_out_5
     );
-
     b4: bcd_to_sevenseg_char
     port map (
         bcd_digit    => bcd_value_4,
         sevenseg_out => seven_seg_out_4
     );
 
+    -- Display blank digit
     b3: bcd_to_sevenseg_char
     port map (
         bcd_digit    => bcd_value_3,
@@ -67,18 +66,17 @@ begin
     bcd_value_3 <= "1111"; -- nothing
 
     -- Convert the score to BCD values
-
-    b0: bcd_to_sevenseg_digit
+    b0: bcd_to_sevenseg_digit -- ones digit
     port map (
         bcd_digit    => bcd_value_0,
         sevenseg_out => seven_seg_out_0
     );
-    b1: bcd_to_sevenseg_digit
+    b1: bcd_to_sevenseg_digit -- tens digit
     port map (
         bcd_digit    => bcd_value_1,
         sevenseg_out => seven_seg_out_1
     );
-    b2: bcd_to_sevenseg_digit
+    b2: bcd_to_sevenseg_digit -- hundreds digit
     port map (
         bcd_digit    => bcd_value_2,
         sevenseg_out => seven_seg_out_2
@@ -87,9 +85,9 @@ begin
     process(clk)
     begin 
         if (rising_edge(clk)) then
-            bcd_value_0 <= std_logic_vector(resize((unsigned(score_input) mod 10), 4));        
-            bcd_value_1 <= std_logic_vector(resize((unsigned(score_input) / 10) mod 10, 4));          
-            bcd_value_2 <= std_logic_vector(resize((unsigned(score_input) / 100) mod 10, 4));   
+            bcd_value_0 <= std_logic_vector(resize((unsigned(score_input) mod 10), 4));         -- ones
+            bcd_value_1 <= std_logic_vector(resize((unsigned(score_input) / 10) mod 10, 4));    -- tens      
+            bcd_value_2 <= std_logic_vector(resize((unsigned(score_input) / 100) mod 10, 4));   -- hundreds
         end if;
     end process;
 

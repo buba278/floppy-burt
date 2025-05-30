@@ -1,5 +1,5 @@
 -- VHDL code for BCD to 7-Segment conversion for numbers
--- In this case, LED is on when it is '0'   
+-- LED is active low
 library IEEE;
 use IEEE.std_logic_1164.all;   
 

@@ -25,7 +25,7 @@ architecture behaviour of gift_renderer is
     constant c_gift_height          : integer range 0 to 30 := 15;      -- size of the shield in pixels
     constant c_screen_width         : integer range 0 to 1023 := 640;   -- VGA screen width
 
-    signal s_gift_x_pos             : integer range -8 to 1023; -- right edge of shield
+    signal s_gift_x_pos             : integer range -8 to 2047; -- right edge of shield
     signal s_gift_y_pos             : integer range 0 to 500;
 
     signal s_previous_game_state    : state_type := start_menu;
@@ -139,7 +139,7 @@ begin
                 if (s_gift_icon_active = '1') then
 
                     if (s_gift_placed = '0') then
-                        s_gift_x_pos <= s_most_right_pipe_x_pos + 107; -- place shield 50 pixels to the right of the most right pipe
+                        s_gift_x_pos <= s_most_right_pipe_x_pos + 125; -- place shield 125 pixels to the right of the most right pipe
                         s_gift_y_pos <= 80 + (to_integer(unsigned(lfsr_value(5 downto 0))) * 5); -- place shield below the current row
                         s_gift_placed <= '1'; 
                     elsif (s_gift_placed = '1') then

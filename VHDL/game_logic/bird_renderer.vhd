@@ -171,10 +171,9 @@ BEGIN
 				v_left_button_one_shot := '0';
 			end if;
 
+			-- if game state has changed then reset bird position and velocity
 			if (game_state /= s_previous_game_state) then
-				
 				s_previous_game_state <= game_state;
-
 				case game_state is
 					when start_menu =>
 						v_bird_y_pos := std_logic_vector(to_unsigned(230,10));
@@ -187,7 +186,7 @@ BEGIN
 					when others =>
 						null;
 				end case;
-				
+			-- otherwise keep changing velocity and take in click
 			else 
 				if (v_left_button_one_shot ='1' and game_state /= game_over and game_state /= start_menu) then
 					v_vel := v_flap_velocity;

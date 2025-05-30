@@ -28,20 +28,20 @@ architecture behaviour of pipe_renderer is
     constant c_bird_x_pos         : integer range 0 to 127    := 100;   -- x position of the bird
 
     signal s_previous_game_state  : state_type := start_menu;
-    signal s_game_start_bool    : std_logic := '0';
+    signal s_game_start_bool      : std_logic := '0';
     signal s_score                : std_logic_vector(9 downto 0) := (others => '0');
 
     -- tracks the right edge of the pipes
     signal s_pipe1_x_pos        : integer := c_screen_width + c_pipe_width;    -- pipes start off screen
     signal s_pipe2_x_pos        : integer := c_screen_width + c_pipe_spacing + c_pipe_width;
     signal s_pipe3_x_pos        : integer := c_screen_width + 2 * c_pipe_spacing + c_pipe_width;
-    signal s_pipe_velocity        : integer range 0 to 8  := 0;
+    signal s_pipe_velocity      : integer range 0 to 8  := 0;
     
     -- for the gaps in the pipes
     signal s_gap1_seed, s_gap2_seed, s_gap3_seed                          : unsigned(5 downto 0);
     signal s_gap1_y_pos, s_gap2_y_pos, s_gap3_y_pos                       : integer range 0 to 512 := 0;
-    signal s_gap1_y_pos_calc, s_gap2_y_pos_calc, s_gap3_y_pos_calc  : integer;
-    signal s_gap_height                                               : integer range 0 to 128 := 65; -- half of the total gap size
+    signal s_gap1_y_pos_calc, s_gap2_y_pos_calc, s_gap3_y_pos_calc        : integer;
+    signal s_gap_height                                                   : integer range 0 to 128 := 65; -- half of the total gap size
 
     -- for moving pipes in hard mode
     signal s_moving_gap1_bool, s_moving_gap2_bool, s_moving_gap3_bool     : boolean := false;
@@ -66,16 +66,16 @@ begin
     s_gap3_y_pos_calc <= 80 + (to_integer(s_gap3_seed) * 5) + s_gap3_displacement;
 
     -- Clamp the calculated values before assigning to the ranged signals
-    s_gap1_y_pos <= 0 when s_gap1_y_pos_calc < 0 else
-                    480 when s_gap1_y_pos_calc > 480 else
+    s_gap1_y_pos <= 80 when s_gap1_y_pos_calc < 80 else
+                    400 when s_gap1_y_pos_calc > 400 else
                     s_gap1_y_pos_calc;
 
-    s_gap2_y_pos <= 0 when s_gap2_y_pos_calc < 0 else
-                    480 when s_gap2_y_pos_calc > 480 else
+    s_gap2_y_pos <= 80 when s_gap2_y_pos_calc < 80 else
+                    400 when s_gap2_y_pos_calc > 400 else
                     s_gap2_y_pos_calc;
 
-    s_gap3_y_pos <= 0 when s_gap3_y_pos_calc < 0 else
-                    480 when s_gap3_y_pos_calc > 480 else
+    s_gap3_y_pos <= 80 when s_gap3_y_pos_calc < 80 else
+                    400 when s_gap3_y_pos_calc > 400 else
                     s_gap3_y_pos_calc;
 
     -- calculate the visibility of the pipes based on the current row and column
