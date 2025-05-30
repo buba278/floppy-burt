@@ -44,17 +44,17 @@ ENTITY foreground2_rom IS
 	(
 		address		: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
 		clock		: IN STD_LOGIC  := '1';
-		q		: OUT STD_LOGIC_VECTOR (11 DOWNTO 0)
+		q		: OUT STD_LOGIC_VECTOR (5 DOWNTO 0)
 	);
 END foreground2_rom;
 
 
 ARCHITECTURE SYN OF foreground2_rom IS
 
-	SIGNAL sub_wire0	: STD_LOGIC_VECTOR (11 DOWNTO 0);
+	SIGNAL sub_wire0	: STD_LOGIC_VECTOR (5 DOWNTO 0);
 
 BEGIN
-	q    <= sub_wire0(11 DOWNTO 0);
+	q    <= sub_wire0(5 DOWNTO 0);
 
 	altsyncram_component : altsyncram
 	GENERIC MAP (
@@ -70,7 +70,7 @@ BEGIN
 		outdata_aclr_a => "NONE",
 		outdata_reg_a => "CLOCK0",
 		widthad_a => 16,
-		width_a => 12,
+		width_a => 6,
 		width_byteena_a => 1
 	)
 	PORT MAP (

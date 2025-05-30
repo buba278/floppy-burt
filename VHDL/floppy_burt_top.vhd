@@ -69,7 +69,7 @@ architecture test_game of floppy_burt_top is
     component bird_renderer IS
         port (
             left_button, right_button   : IN std_logic;
-            VGA_VS                      : IN std_logic;
+            VGA_VS, clock               : IN std_logic;
             current_row, current_col	: IN std_logic_vector(9 DOWNTO 0);
             bird_reset					: IN std_logic;
 		    game_state 					: IN state_type;
@@ -144,7 +144,7 @@ architecture test_game of floppy_burt_top is
 
     component bg_renderer IS
 	PORT ( 
-        vsync, clock                : IN std_logic;
+     vsync, clock                : IN std_logic;
 		current_row, current_col	: IN std_logic_vector(9 DOWNTO 0); -- bgs only need 8bit but it alg
 		red, green, blue            : OUT std_logic_vector(3 downto 0) -- 4bit color
 	);		
@@ -297,6 +297,7 @@ begin
             left_button => s_left_button,
             right_button => s_right_button,
             VGA_VS => s_VGA_VS,
+            clock => clock_25Mhz,
             current_row => s_pix_row, 
             current_col => s_pix_col,
             bird_reset => s_bird_reset,
@@ -445,40 +446,86 @@ begin
             s_pipe3_r,s_pipe3_g,s_pipe3_b,s_pipe3_visible,
             s_screen_r,s_screen_g,s_screen_b,s_game_state,
             s_gift_visible, s_gift_r, s_gift_g, s_gift_b)
+        -- Variables to hold the current pixel color as we layer
+        variable current_r, current_g, current_b : std_logic_vector(3 downto 0);
+        -- Variables for unsigned arithmetic during blending
+        variable temp_obj_u, temp_bg_u, temp_blended_u : unsigned(3 downto 0);
     begin
-        -- Layers
-        -- background
-        s_final_r <= s_bg_r;
-        s_final_g <= s_bg_g;
-        s_final_b <= s_bg_b;
-
         
-        -- pipe1
+
+        -- Layer 0: Background
+        current_r := s_bg_r;
+        current_g := s_bg_g;
+        current_b := s_bg_b;
+
+        -- Layer 1: Pipe1 (Translucent)
         if (s_pipe1_visible = '1') then
-            s_final_r <= s_pipe1_r;
-            s_final_g <= s_pipe1_g;
-            s_final_b <= s_pipe1_b;
+            -- Blend Red component
+            temp_obj_u := unsigned(s_pipe1_r);
+            temp_bg_u  := unsigned(current_r);
+            temp_blended_u := shift_right(temp_obj_u, 1) + shift_right(temp_bg_u, 1);
+            current_r  := std_logic_vector(temp_blended_u);
+
+            -- Blend Green component
+            temp_obj_u := unsigned(s_pipe1_g);
+            temp_bg_u  := unsigned(current_g);
+            temp_blended_u := shift_right(temp_obj_u, 1) + shift_right(temp_bg_u, 1);
+            current_g  := std_logic_vector(temp_blended_u);
+
+            -- Blend Blue component
+            temp_obj_u := unsigned(s_pipe1_b);
+            temp_bg_u  := unsigned(current_b);
+            temp_blended_u := shift_right(temp_obj_u, 1) + shift_right(temp_bg_u, 1);
+            current_b  := std_logic_vector(temp_blended_u);
         end if;
 
-        -- pipe2
+        -- Layer 2: Pipe2 (Translucent)
         if (s_pipe2_visible = '1') then
-            s_final_r <= s_pipe2_r;
-            s_final_g <= s_pipe2_g;
-            s_final_b <= s_pipe2_b;
+            -- Blend Red component
+            temp_obj_u := unsigned(s_pipe2_r);
+            temp_bg_u  := unsigned(current_r);
+            temp_blended_u := shift_right(temp_obj_u, 1) + shift_right(temp_bg_u, 1);
+            current_r  := std_logic_vector(temp_blended_u);
+
+            -- Blend Green component
+            temp_obj_u := unsigned(s_pipe2_g);
+            temp_bg_u  := unsigned(current_g);
+            temp_blended_u := shift_right(temp_obj_u, 1) + shift_right(temp_bg_u, 1);
+            current_g  := std_logic_vector(temp_blended_u);
+
+            -- Blend Blue component
+            temp_obj_u := unsigned(s_pipe2_b);
+            temp_bg_u  := unsigned(current_b);
+            temp_blended_u := shift_right(temp_obj_u, 1) + shift_right(temp_bg_u, 1);
+            current_b  := std_logic_vector(temp_blended_u);
         end if;
 
-        -- pipe3
+        -- Layer 3: Pipe3 (Translucent)
         if (s_pipe3_visible = '1') then
-            s_final_r <= s_pipe3_r;
-            s_final_g <= s_pipe3_g;
-            s_final_b <= s_pipe3_b;
+            -- Blend Red component
+            temp_obj_u := unsigned(s_pipe3_r);
+            temp_bg_u  := unsigned(current_r);
+            temp_blended_u := shift_right(temp_obj_u, 1) + shift_right(temp_bg_u, 1);
+            current_r  := std_logic_vector(temp_blended_u);
+
+            -- Blend Green component
+            temp_obj_u := unsigned(s_pipe3_g);
+            temp_bg_u  := unsigned(current_g);
+            temp_blended_u := shift_right(temp_obj_u, 1) + shift_right(temp_bg_u, 1);
+            current_g  := std_logic_vector(temp_blended_u);
+
+            -- Blend Blue component
+            temp_obj_u := unsigned(s_pipe3_b);
+            temp_bg_u  := unsigned(current_b);
+            temp_blended_u := shift_right(temp_obj_u, 1) + shift_right(temp_bg_u, 1);
+            current_b  := std_logic_vector(temp_blended_u);
         end if;
 
-        -- ball
+        -- Layer 4: Bird (Opaque - drawn on top of pipes/background)
         if (s_bird_visible = '1') then
-            s_final_r <= s_bird_r;
-            s_final_g <= s_bird_g;
-            s_final_b <= s_bird_b;
+            current_r := s_bird_r;
+            current_g := s_bird_g;
+            current_b := s_bird_b;
         end if;
 
         -- gift
@@ -488,20 +535,32 @@ begin
             s_final_b <= s_gift_b;
         end if;
 
-        -- text
-        if (s_text_visible = '1') then
-            s_final_r <= s_text_r;
-            s_final_g <= s_text_g;
-            s_final_b <= s_text_b;
+        -- gift
+        if (s_gift_visible = '1') then
+            s_final_r <= s_gift_r;
+            s_final_g <= s_gift_g;
+            s_final_b <= s_gift_b;
         end if;
 
+        -- Layer 5: Text (Opaque - drawn on top of bird/pipes/background)
+        if (s_text_visible = '1') then
+            current_r := s_text_r;
+            current_g := s_text_g;
+            current_b := s_text_b;
+        end if;
+
+        -- Layer 6: Screens (start_menu/game_over overlays - Opaque)
         if ((s_game_state = start_menu or s_game_state = game_over)
              and (s_screen_r /= "0000" or s_screen_g /= "0000" or s_screen_b /= "0000")) then
-            s_final_r <= s_screen_r;
-            s_final_g <= s_screen_g;
-            s_final_b <= s_screen_b;
+            current_r := s_screen_r;
+            current_g := s_screen_g;
+            current_b := s_screen_b;
         end if;
-        
+
+        -- Final assignment to output signals that go to VGA_SYNC
+        s_final_r <= current_r;
+        s_final_g <= current_g;
+        s_final_b <= current_b;
     end process;
 
     -- Final Assignment (no rgb as done by vga sync)

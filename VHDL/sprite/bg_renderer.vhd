@@ -21,7 +21,7 @@ architecture behaviour of bg_renderer is
 	(
 		address		: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
 		clock		: IN STD_LOGIC;
-		q		    : OUT STD_LOGIC_VECTOR (11 DOWNTO 0)
+		q		    : OUT STD_LOGIC_VECTOR (5 DOWNTO 0)
 	);
     end component foreground1_rom;
 
@@ -30,7 +30,7 @@ architecture behaviour of bg_renderer is
 	(
 		address		: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
 		clock		: IN STD_LOGIC;
-		q		    : OUT STD_LOGIC_VECTOR (11 DOWNTO 0)
+		q		    : OUT STD_LOGIC_VECTOR (5 DOWNTO 0)
 	);
     END component foreground2_rom;
 
@@ -63,9 +63,9 @@ architecture behaviour of bg_renderer is
     signal s_fg_offset : integer range 0 to 511;
     signal s_fg_pos_col : std_logic_vector(7 downto 0);
     signal s_fg_pos_row : std_logic_vector(7 downto 0);
-    signal s_fg_r, s_fg_g, s_fg_b : std_logic_vector(3 downto 0);
-    signal s_fg1_r, s_fg1_g, s_fg1_b : std_logic_vector(3 downto 0);
-    signal s_fg2_r, s_fg2_g, s_fg2_b : std_logic_vector(3 downto 0);
+    signal s_fg_r, s_fg_g, s_fg_b : std_logic_vector(1 downto 0);
+    signal s_fg1_r, s_fg1_g, s_fg1_b : std_logic_vector(1 downto 0);
+    signal s_fg2_r, s_fg2_g, s_fg2_b : std_logic_vector(1 downto 0);
 
     -- sand
     signal s_sand_offset : integer range 0 to 255;
@@ -86,9 +86,9 @@ BEGIN
             address(7 downto 0) => s_fg_pos_col,
             clock => clock,
             -- out
-            q(11 downto 8) => s_fg1_r,
-            q(7 downto 4) => s_fg1_g,
-            q(3 downto 0) => s_fg1_b
+            q(5 downto 4) => s_fg1_r,
+            q(3 downto 2) => s_fg1_g,
+            q(1 downto 0) => s_fg1_b
         );
 
     bg2: foreground2_rom
@@ -98,9 +98,9 @@ BEGIN
             address(7 downto 0) => s_fg_pos_col,
             clock => clock,
             -- out
-            q(11 downto 8) => s_fg2_r,
-            q(7 downto 4) => s_fg2_g,
-            q(3 downto 0) => s_fg2_b
+            q(5 downto 4) => s_fg2_r,
+            q(3 downto 2) => s_fg2_g,
+            q(1 downto 0) => s_fg2_b
         );
 
     sand: sand_rom
@@ -204,7 +204,7 @@ BEGIN
     begin
         -- can do visibility flags based on color content - (0,0,0)
         -- remember variables cant do "when"
-        if (s_fg_r = "0000" and s_fg_g = "0000" and s_fg_b = "0000") then
+        if (s_fg_r = "00" and s_fg_g = "00" and s_fg_b = "00") then
             v_fg_visibility := '0';
         else
             v_fg_visibility := '1';
@@ -227,9 +227,9 @@ BEGIN
         end if;
 
         if (v_fg_visibility = '1') then
-            red <= s_fg_r;
-            green <= s_fg_g;
-            blue <= s_fg_b;
+            red <= s_fg_r & "00";
+            green <= s_fg_g & "00";
+            blue <= s_fg_b & "00";
         end if;
     end process;
 
